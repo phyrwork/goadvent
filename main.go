@@ -2,30 +2,17 @@ package main
 
 import (
 	"fmt"
+	"github.com/phyrwork/goadvent/app"
 	"github.com/phyrwork/goadvent/day/oneseven/captcha"
-	"io"
 	"log"
 	"os"
-	"strconv"
 )
 
-type Solver interface {
-	Solve(rd io.Reader) (string, error)
-}
 
-type SolverFunc func (io.Reader) (string, error)
 
-func (f SolverFunc) Solve(rd io.Reader) (string, error) { return f(rd) }
-
-var solvers = map[string]Solver{
-	"2017.1.1": SolverFunc(func (rd io.Reader) (string, error) {
-		d, err := captcha.NewDigits(rd)
-		if err != nil {
-			return "", err
-		}
-		i := d.Sum()
-		return strconv.Itoa(i), nil
-	}),
+var solvers = map[string]app.Solver{
+	"2017.1.1": captcha.NewSolver(captcha.Next),
+	"2017.1.2": captcha.NewSolver(captcha.Half),
 }
 
 func main() {

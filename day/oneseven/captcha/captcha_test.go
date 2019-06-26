@@ -7,12 +7,18 @@ import (
 
 var tests = []struct{
 	in string
+	cmp CmpFunc
 	sum int
  }{
- 	{"1122", 3},
-	{"1111", 4},
-	{"1234", 0},
-	{"91212129", 9},
+ 	{"1122", Next, 3},
+	{"1111", Next, 4},
+	{"1234", Next, 0},
+	{"91212129", Next, 9},
+	{"1212", Half, 6},
+	{"1221", Half, 0},
+	{"123425", Half, 4},
+	{"123123", Half, 12},
+	{"12131415", Half, 4},
 }
 
 func TestNewDigits(t *testing.T) {
@@ -39,7 +45,7 @@ func TestDigits_Sum(t *testing.T) {
 			if err != nil {
 				t.Fatalf("error creating object under test: %v", err)
 			}
-			sum := d.Sum()
+			sum := d.Sum(test.cmp)
 			if sum != test.sum {
 				t.Fatalf("unexpected sum: want %v, got %v", test.sum, sum)
 			}

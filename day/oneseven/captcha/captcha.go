@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"container/ring"
 	"fmt"
+	"github.com/phyrwork/goadvent/app"
 	"io"
 	"strconv"
 )
@@ -63,13 +64,36 @@ func (d *Digits) each(f func (*ring.Ring)) {
 	}
 }
 
-func (d *Digits) Sum() int {
+type CmpFunc func (curr *ring.Ring) *ring.Ring
+
+func Next(r *ring.Ring) *ring.Ring { return r.Next() }
+
+func Half(r *ring.Ring) *ring.Ring {
+	d := r.Len()/2
+	for i := 0; i < d; i++ {
+		r = r.Next()
+	}
+	return r
+}
+
+func (d *Digits) Sum(cmp CmpFunc) int {
 	s := 0
 	d.each(func (r *ring.Ring) {
-		a, b := r.Value.(int), r.Next().Value.(int)
+		a, b := r.Value.(int), cmp(r).Value.(int)
 		if a == b {
 			s += a
 		}
 	})
 	return s
+}
+
+func NewSolver(cmp CmpFunc) app.SolverFunc {
+	return func (rd io.Reader) (string, error) {
+		d, err := NewDigits(rd)
+		if err != nil {
+			return "", err
+		}
+		i := d.Sum(cmp)
+		return strconv.Itoa(i), nil
+	}
 }
