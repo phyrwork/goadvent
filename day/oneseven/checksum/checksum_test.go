@@ -1,6 +1,7 @@
 package checksum
 
 import (
+	"github.com/phyrwork/goadvent/iterator"
 	"strings"
 	"testing"
 )
@@ -16,30 +17,30 @@ var example2 = `5 9 2 8
 3 8 6 5`
 
 var rows = map[string]struct{
-	v       Values
+	it      iterator.ResetIterator
 	min     int
 	max     int
 	diff    int
 	factdiv int
 }{
-	//"1": {NewOrderedValues(5, 1, 9, 5), 1, 9, 8, 0},
-	//"2": {NewOrderedValues(7, 5, 3), 3, 7, 4, 0},
-	//"3": {NewOrderedValues(2, 4, 6, 8), 2, 8, 6, 0},
-	"4": {NewOrderedValues(5, 9, 2, 8), 2, 9, 7, 4},
-	"5": {NewOrderedValues(9, 4, 7, 3), 3, 9, 6, 3},
-	"6": {NewOrderedValues(3, 8, 6, 5), 3, 8, 5, 2},
+	"1": {iterator.NewArrayIterator(5, 1, 9, 5), 1, 9, 8, 0},
+	"2": {iterator.NewArrayIterator(7, 5, 3),    3, 7, 4, 0},
+	"3": {iterator.NewArrayIterator(2, 4, 6, 8), 2, 8, 6, 0},
+	"4": {iterator.NewArrayIterator(5, 9, 2, 8), 2, 9, 7, 4},
+	"5": {iterator.NewArrayIterator(9, 4, 7, 3), 3, 9, 6, 3},
+	"6": {iterator.NewArrayIterator(3, 8, 6, 5), 3, 8, 5, 2},
 }
 
 var pages = map[string]struct{
-	r Rows
+	it  iterator.ResetIterator
 	sum SumFunc
 	chk int
 }{
 	"1 (numeric)": {
-		NewOrderedRows(
-			NewOrderedValues(5, 1, 9, 5),
-			NewOrderedValues(7, 5, 3),
-			NewOrderedValues(2, 4, 6, 8),
+		iterator.NewArrayIterator(
+			iterator.NewArrayIterator(5, 1, 9, 5),
+			iterator.NewArrayIterator(7, 5, 3),
+			iterator.NewArrayIterator(2, 4, 6, 8),
 		),
 		Diff,
 		18,
@@ -59,7 +60,10 @@ var pages = map[string]struct{
 func TestMin(t *testing.T) {
 	for name, test := range rows {
 		t.Run(name, func(t *testing.T) {
-			r, err := Min(test.v)
+			if err := test.it.Reset(); err != nil {
+				 t.Fatalf("unexpected error: %v", err)
+			}
+			r, err := Min(test.it)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -73,7 +77,10 @@ func TestMin(t *testing.T) {
 func TestMax(t *testing.T) {
 	for name, test := range rows {
 		t.Run(name, func(t *testing.T) {
-			r, err := Max(test.v)
+			if err := test.it.Reset(); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			r, err := Max(test.it)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -87,7 +94,10 @@ func TestMax(t *testing.T) {
 func TestDiff(t *testing.T) {
 	for name, test := range rows {
 		t.Run(name, func(t *testing.T) {
-			r, err := Diff(test.v)
+			if err := test.it.Reset(); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			r, err := Diff(test.it)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -101,7 +111,10 @@ func TestDiff(t *testing.T) {
 func TestFactorDiv(t *testing.T) {
 	for name, test := range rows {
 		t.Run(name, func(t *testing.T) {
-			r, err := FactorDiv(test.v)
+			if err := test.it.Reset(); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			r, err := FactorDiv(test.it)
 			if test.factdiv > 0 {
 				if err != nil {
 					t.Fatalf("unexpected error: %v", err)
@@ -121,7 +134,10 @@ func TestFactorDiv(t *testing.T) {
 func TestChecksum(t *testing.T) {
 	for name, test := range pages {
 		t.Run(name, func(t *testing.T) {
-			r, err := Checksum(test.r, test.sum)
+			if err := test.it.Reset(); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			r, err := Checksum(test.it, test.sum)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
