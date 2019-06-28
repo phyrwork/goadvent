@@ -30,20 +30,37 @@ type Executable interface {
 	Exec()
 }
 
+type JumpFunc func (pc, op *int)
+
 type Jumper struct {
 	p Program
 	pc int
+	jmp JumpFunc
 }
 
-func NewJumper(p Program) *Jumper { return &Jumper{p, 0} }
+func NewJumper(p Program, jmp JumpFunc) *Jumper { return &Jumper{p, 0, jmp} }
 
 func (j *Jumper) OK() bool { return j.pc < len(j.p) }
 
 func (j *Jumper) Exec() {
 	op := &j.p[j.pc]
+	j.jmp(&j.pc, op)
+}
+
+func Jump(pc, op *int) {
 	d := *op
-	*op += 1
-	j.pc += d
+	*op++
+	*pc += d
+}
+
+func StrangeJump(pc, op *int) {
+	d := *op
+	if d >= 3 {
+		*op--
+	} else {
+		*op++
+	}
+	*pc += d
 }
 
 func Exec(exe Executable) int {
@@ -55,13 +72,13 @@ func Exec(exe Executable) int {
 	return c
 }
 
-func NewSolver(f func (Program) Executable) app.SolverFunc {
+func NewSolver(jmp JumpFunc) app.SolverFunc {
 	return app.SolverFunc(func (r io.Reader) (string, error) {
 		p, err := ReadProgram(r)
 		if err != nil {
 			return "", err
 		}
-		exe := f(p)
+		exe := NewJumper(p, jmp)
 		c := Exec(exe)
 		return strconv.Itoa(c), nil
 	})
