@@ -5,6 +5,7 @@ import (
 	"github.com/phyrwork/goadvent/app"
 	"github.com/phyrwork/goadvent/day/oneseven/captcha"
 	"github.com/phyrwork/goadvent/day/oneseven/checksum"
+	"github.com/phyrwork/goadvent/day/oneseven/jump"
 	"github.com/phyrwork/goadvent/day/oneseven/passwd"
 	"log"
 	"os"
@@ -17,6 +18,7 @@ var solvers = map[string]app.Solver{
 	"2017.2.2": checksum.NewSolver(checksum.FactorDiv),
 	"2017.4.1": passwd.NewSolver(passwd.UniqWords),
 	"2017.4.2": passwd.NewSolver(passwd.UniqAnagrams),
+	"2017.5.1": jump.NewSolver(func (p jump.Program) jump.Executable { return jump.NewJumper(p) }),
 }
 
 func main() {
