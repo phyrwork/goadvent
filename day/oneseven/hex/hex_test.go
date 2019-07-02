@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestSolve(t *testing.T) {
+func TestSolveSum(t *testing.T) {
 	tests := map[string]int {
 		"ne,ne,ne": 3,
 		"ne,ne,sw,sw": 0,
@@ -15,7 +15,7 @@ func TestSolve(t *testing.T) {
 	for s, want := range tests {
 		t.Run(s, func(t *testing.T) {
 			r := strings.NewReader(s)
-			got, err := Solve(r)
+			got, err := Solve(r, Sum)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}

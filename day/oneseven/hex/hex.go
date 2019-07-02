@@ -1,9 +1,9 @@
 package hex
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/phyrwork/goadvent/app"
+	"github.com/phyrwork/goadvent/iterator"
 	"github.com/phyrwork/goadvent/vector"
 	"io"
 	"log"
@@ -57,24 +57,25 @@ func ScanTokens(data []byte, atEOF bool) (advance int, token []byte, err error) 
 	return 0, nil, nil
 }
 
-func NewScanner(r io.Reader) *bufio.Scanner {
-	sc := bufio.NewScanner(r)
+func NewScanner(r io.Reader) *iterator.TransformIterator {
+	sc := iterator.NewScannerIterator(r)
 	sc.Split(ScanTokens)
-	return sc
+	return iterator.NewTransformIterator(sc, func (v interface{}) (interface{}, error) {
+		d, ok := dirs[v.(string)]
+		if !ok {
+			return nil, fmt.Errorf("unknown token: %v", d)
+		}
+		return d, nil
+	})
 }
 
 func ScanVector(r io.Reader) (vector.Vector, error) {
-	v := vector.Vector{0, 0, 0}
+	d := vector.Vector{0, 0, 0}
 	sc := NewScanner(r)
-	for sc.Scan() {
-		t := sc.Text()
-		d, ok := dirs[t]
-		if !ok {
-			return nil, fmt.Errorf("unknown token: %v", t)
-		}
-		v = vector.Sum(v, d)
-	}
-	return v, nil
+	return d, iterator.Each(sc, func (v interface{}) error {
+		d = vector.Sum(d, v.(vector.Vector))
+		return nil
+	})
 }
 
 func Dist(a, b vector.Vector) int {
@@ -87,17 +88,41 @@ func Dist(a, b vector.Vector) int {
 	return vector.Manhattan(a, b)/2
 }
 
-func Solve(r io.Reader) (int, error) {
-	v, err := ScanVector(r)
+type AccumulatorFunc func (it iterator.Iterator) (vector.Vector, error)
+
+func Sum(it iterator.Iterator) (vector.Vector, error) {
+	d := vector.Vector{0, 0, 0}
+	return d, iterator.Each(it, func (v interface{}) error {
+		d = vector.Sum(d, v.(vector.Vector))
+		return nil
+	})
+}
+
+func MaxDist(it iterator.Iterator) (vector.Vector, error) {
+	o := vector.Vector{0, 0, 0}
+	d := o
+	m := d
+	return m, iterator.Each(it, func(v interface{}) error {
+		d = vector.Sum(d, v.(vector.Vector))
+		if b, a := Dist(o, m), Dist(o, d); a > b {
+			m = d
+		}
+		return nil
+	})
+}
+
+func Solve(r io.Reader, f AccumulatorFunc) (int, error) {
+	sc := NewScanner(r)
+	v, err := f(sc)
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 	return Dist(vector.Vector{0, 0, 0}, v), nil
 }
 
-func NewSolver() app.SolverFunc {
+func NewSolver(f AccumulatorFunc) app.SolverFunc {
 	return func (r io.Reader) (string, error) {
-		d, err := Solve(r)
+		d, err := Solve(r, f)
 		if err != nil {
 			return "", err
 		}

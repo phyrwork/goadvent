@@ -21,7 +21,8 @@ var solvers = map[string]app.Solver{
 	"2017.4.2":  passwd.NewSolver(passwd.UniqAnagrams),
 	"2017.5.1":  jump.NewSolver(jump.Jump),
 	"2017.5.2":  jump.NewSolver(jump.StrangeJump),
-	"2017.10.1": hex.NewSolver(),
+	"2017.10.1": hex.NewSolver(hex.Sum),
+	"2017.10.2": hex.NewSolver(hex.MaxDist),
 }
 
 func main() {
