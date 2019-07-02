@@ -5,6 +5,7 @@ import (
 	"github.com/phyrwork/goadvent/app"
 	"github.com/phyrwork/goadvent/day/oneseven/captcha"
 	"github.com/phyrwork/goadvent/day/oneseven/checksum"
+	"github.com/phyrwork/goadvent/day/oneseven/hex"
 	"github.com/phyrwork/goadvent/day/oneseven/jump"
 	"github.com/phyrwork/goadvent/day/oneseven/passwd"
 	"log"
@@ -12,14 +13,15 @@ import (
 )
 
 var solvers = map[string]app.Solver{
-	"2017.1.1": captcha.NewSolver(captcha.Next),
-	"2017.1.2": captcha.NewSolver(captcha.Half),
-	"2017.2.1": checksum.NewSolver(checksum.Diff),
-	"2017.2.2": checksum.NewSolver(checksum.FactorDiv),
-	"2017.4.1": passwd.NewSolver(passwd.UniqWords),
-	"2017.4.2": passwd.NewSolver(passwd.UniqAnagrams),
-	"2017.5.1": jump.NewSolver(jump.Jump),
-	"2017.5.2": jump.NewSolver(jump.StrangeJump),
+	"2017.1.1":  captcha.NewSolver(captcha.Next),
+	"2017.1.2":  captcha.NewSolver(captcha.Half),
+	"2017.2.1":  checksum.NewSolver(checksum.Diff),
+	"2017.2.2":  checksum.NewSolver(checksum.FactorDiv),
+	"2017.4.1":  passwd.NewSolver(passwd.UniqWords),
+	"2017.4.2":  passwd.NewSolver(passwd.UniqAnagrams),
+	"2017.5.1":  jump.NewSolver(jump.Jump),
+	"2017.5.2":  jump.NewSolver(jump.StrangeJump),
+	"2017.10.1": hex.NewSolver(),
 }
 
 func main() {
