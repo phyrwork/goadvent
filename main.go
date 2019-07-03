@@ -22,6 +22,7 @@ var solvers = map[string]app.Solver{
 	"2017.5.1": jump.NewSolver(jump.Jump),
 	"2017.5.2": jump.NewSolver(jump.StrangeJump),
 	"2017.9.1": stream.NewSolver(func (g *stream.Group) int { return g.Score(1) }),
+	"2017.9.2": stream.NewSolver(func (g *stream.Group) int { return g.Chars() }),
 }
 
 func main() {

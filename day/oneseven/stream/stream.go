@@ -37,6 +37,7 @@ var lexr = lexer.Must(ebnf.New(`
 
 var parser = participle.MustBuild(&Group{}, participle.Lexer(lexr), participle.Elide("Whitespace"))
 
+// Count groups
 func (g *Group) Count() int {
 	n := 1
 	for _, g := range g.Groups {
@@ -55,6 +56,21 @@ func (g *Group) Score(d int) int {
 		}
 	}
 	return s
+}
+
+func (g *Group) Chars() int {
+	n := 0
+	for _, g := range g.Groups {
+		switch {
+		case g.Group != nil:
+			n += g.Group.Chars()
+		case g.Trash != nil:
+			for _, t := range g.Trash.Trash {
+				n += len(t.Chars)
+			}
+		}
+	}
+	return n
 }
 
 func NewSolver(f func (g *Group) int) app.SolverFunc {
