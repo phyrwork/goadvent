@@ -7,6 +7,7 @@ import (
 	"github.com/phyrwork/goadvent/day/oneseven/checksum"
 	"github.com/phyrwork/goadvent/day/oneseven/jump"
 	"github.com/phyrwork/goadvent/day/oneseven/passwd"
+	"github.com/phyrwork/goadvent/day/oneseven/stream"
 	"log"
 	"os"
 )
@@ -20,6 +21,7 @@ var solvers = map[string]app.Solver{
 	"2017.4.2": passwd.NewSolver(passwd.UniqAnagrams),
 	"2017.5.1": jump.NewSolver(jump.Jump),
 	"2017.5.2": jump.NewSolver(jump.StrangeJump),
+	"2017.9.1": stream.NewSolver(func (g *stream.Group) int { return g.Score(1) }),
 }
 
 func main() {
