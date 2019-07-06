@@ -8,10 +8,7 @@ import (
 	"io"
 	"log"
 	"strconv"
-	"unicode/utf8"
 )
-
-const toksep = ','
 
 // https://www.redblobgames.com/grids/hexagons/#distances
 // is a very useful resource on hexagonal grids
@@ -42,24 +39,11 @@ var dirs = map[string]vector.Vector {
 	"se": {-1, -1,  0},
 }
 
-func ScanTokens(data []byte, atEOF bool) (advance int, token []byte, err error) {
-	// see bufio.ScanWords for implementation notes
-	for width, i := 0, 0; i < len(data); i += width {
-		var r rune
-		r, width = utf8.DecodeRune(data[i:])
-		if r == toksep || r == '\n' {
-			return i + width, data[0:i], nil
-		}
-	}
-	if atEOF && len(data) > 0 {
-		return len(data), data[0:], nil
-	}
-	return 0, nil, nil
-}
+
 
 func NewScanner(r io.Reader) *iterator.TransformIterator {
 	sc := iterator.NewScannerIterator(r)
-	sc.Split(ScanTokens)
+	sc.Split(iterator.ScanComma)
 	return iterator.NewTransformIterator(sc, func (v interface{}) (interface{}, error) {
 		d, ok := dirs[v.(string)]
 		if !ok {

@@ -4,7 +4,23 @@ import (
 	"bufio"
 	"errors"
 	"io"
+	"unicode/utf8"
 )
+
+func ScanComma(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	// see bufio.ScanWords for implementation notes
+	for width, i := 0, 0; i < len(data); i += width {
+		var r rune
+		r, width = utf8.DecodeRune(data[i:])
+		if r == ',' || r == '\n' {
+			return i + width, data[0:i], nil
+		}
+	}
+	if atEOF && len(data) > 0 {
+		return len(data), data[0:], nil
+	}
+	return 0, nil, nil
+}
 
 type ScannerIterator struct {
 	r io.Reader
