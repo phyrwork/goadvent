@@ -43,7 +43,7 @@ var dirs = map[string]vector.Vector {
 
 func NewScanner(r io.Reader) *iterator.TransformIterator {
 	sc := iterator.NewScannerIterator(r)
-	sc.Split(iterator.ScanComma)
+	sc.Split(iterator.SplitComma)
 	return iterator.NewTransformIterator(sc, func (v interface{}) (interface{}, error) {
 		d, ok := dirs[v.(string)]
 		if !ok {

@@ -25,7 +25,8 @@ var solvers = map[string]app.Solver{
 	"2017.5.2": jump.NewSolver(jump.StrangeJump),
 	"2017.9.1": stream.NewSolver(func (g *stream.Group) int { return g.Score(1) }),
 	"2017.9.2": stream.NewSolver(func (g *stream.Group) int { return g.Chars() }),
-	"2017.10.1": knot.NewSolver(),
+	"2017.10.1": app.SolverFunc(knot.SolveSparse),
+	"2017.10.2": app.SolverFunc(knot.KnotHash),
 	"2017.11.1": hex.NewSolver(hex.Sum),
 	"2017.11.2": hex.NewSolver(hex.MaxDist),
 }

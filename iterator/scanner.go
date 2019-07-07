@@ -7,7 +7,7 @@ import (
 	"unicode/utf8"
 )
 
-func ScanComma(data []byte, atEOF bool) (advance int, token []byte, err error) {
+func SplitComma(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	// see bufio.ScanWords for implementation notes
 	for width, i := 0, 0; i < len(data); i += width {
 		var r rune
@@ -57,3 +57,4 @@ func (it *ScannerIterator) Reset() error {
 func (it *ScannerIterator) Next() bool { return it.Scan() }
 
 func (it *ScannerIterator) Value() interface{} { return it.Text() }
+

@@ -1,19 +1,27 @@
 package knot
 
+// TODO: whilst this was a fun way of playing about with concurrency,
+//  (hello errgroup) by the end of part 2 it is clear that there
+//  there is no real need for channels here
+
 import (
 	"bufio"
 	"container/ring"
-	"github.com/phyrwork/goadvent/app"
+	"encoding/hex"
+	"fmt"
 	"github.com/phyrwork/goadvent/iterator"
 	"golang.org/x/sync/errgroup"
 	"io"
 	"strconv"
 )
 
-func New(n int) *ring.Ring {
-	r := ring.New(n)
+func NewRing(n int) *ring.Ring {
+	if n > 256 {
+		panic("n > 256")
+	}
+	r := ring.New(int(n))
 	for i := 0; i < n; i++ {
-		r.Value = i
+		r.Value = byte(i)
 		r = r.Next()
 	}
 	return r
@@ -68,7 +76,8 @@ func (r *Reverser) Sector(o int, n int) *Reverser {
 	return r
 }
 
-func Knot(r *ring.Ring, str <-chan int) *ring.Ring {
+func SparseHash(n int, str <-chan byte) []byte {
+	r := NewRing(n)
 	pos := 0
 	skip := 0
 	rv := NewReverser(r)
@@ -76,49 +85,136 @@ func Knot(r *ring.Ring, str <-chan int) *ring.Ring {
 		// Although Reverser is able to reverse a sector by offset,
 		// we can reduce accumulating large offset traversals at each
 		// operation by moving the cursor and correcting at the end
-		rv.Sector(0, size)
-		adv := size + skip
+		rv.Sector(0, int(size))
+		adv := int(size) + skip
 		rv.Move(adv)
 		pos += adv
 		skip++
 	}
-	// TODO: I have no idea why we need to return Prev() but, yolo, it works
-	return rv.Move(-pos % rv.Len()).Ring()
+	h := make([]byte, 0, n)
+	r = rv.Move(-pos % rv.Len()).Ring()
+	r.Do(func (v interface{}) {
+		h = append(h, v.(byte))
+	})
+	return h
 }
 
-func Solve(n int, rd io.Reader) (int, error) {
-	sc := bufio.NewScanner(rd)
-	sc.Split(iterator.ScanComma)
-	str := make(chan int)
+func DenseHash(in []byte) ([]byte, error) {
+	if len(in) % 16 != 0 {
+		return nil, fmt.Errorf("input size (%v) not multiple of block size (%v)", len(in), 16)
+	}
+	h := make([]byte, 0, len(in)/16)
+	for o := 0; o < len(in); o += 16 {
+		x := byte(0)
+		for n := 0; n < 16; n++ {
+			x ^= in[o + n]
+		}
+		h = append(h, x)
+	}
+	return h, nil
+}
+
+// TODO: there's a bug somewhere (my input doesn't give the right answer)
+//  but it passes for all the given examples! :(
+func KnotHash(rd io.Reader) (string, error) {
+	str := make(chan byte)
 	g := errgroup.Group{}
 	g.Go(func() error {
-		defer close(str)
+		return NewRepeatStream(NewByteStream(rd), 64)(str)
+	})
+	s := SparseHash(256, str)
+	if err := g.Wait(); err != nil {
+		return "", err
+	}
+	d, err := DenseHash(s)
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(d), nil
+}
+
+type StreamFunc func (str chan <-byte) error
+
+func NewCommaStream(rd io.Reader) StreamFunc {
+	return func(out chan <-byte) error {
+		defer close(out)
+		sc := bufio.NewScanner(rd)
+		sc.Split(iterator.SplitComma)
 		for sc.Scan() {
 			s := sc.Text()
 			size, err := strconv.Atoi(s)
 			if err != nil {
 				return err
 			}
-			str <- size
+			out <- byte(size)
 		}
 		return sc.Err()
+	}
+}
+
+func NewByteStream(rd io.Reader) StreamFunc {
+	return func(out chan <-byte) error {
+		defer close(out)
+		sc := bufio.NewScanner(rd)
+		sc.Split(bufio.ScanRunes)
+		for sc.Scan() {
+			s := sc.Text()
+			out <- byte(s[0])
+		}
+		// n.b. although it's not in the naming, just put the weird
+		// additional sizes demanded by the part two solution here
+		for _, size := range []byte{17, 31, 73, 47, 23} {
+			out <- size
+		}
+		return sc.Err()
+	}
+}
+
+func NewRepeatStream(in StreamFunc, n int) StreamFunc {
+	return func (out chan <-byte) error {
+		c := make(chan byte)
+		g := errgroup.Group{}
+		g.Go(func() error {
+			return in(c)
+		})
+		a := make([]byte, 0)
+		for e := range c {
+			a = append(a, e)
+		}
+		if err := g.Wait(); err != nil {
+			return fmt.Errorf("stream repeat error: %v", err)
+		}
+		go func () {
+			defer close(out)
+			for ; n > 0; n-- {
+				for _, i := range a {
+					out <- i
+				}
+			}
+		}()
+		return nil
+	}
+}
+
+func solveSparse(n int, strf StreamFunc) (int, error) {
+	str := make(chan byte)
+	g := errgroup.Group{}
+	g.Go(func() error {
+		return strf(str)
 	})
-	r := New(n)
-	r = Knot(r, str)
+	h := SparseHash(n, str)
 	if err := g.Wait(); err != nil {
 		return 0, err
 	}
-	a, b := r.Value.(int), r.Next().Value.(int)
-	return a * b, nil
+	a, b := h[0], h[1]
+	return int(a) * int(b), nil
 }
 
-func NewSolver() app.SolverFunc {
-	return func (rd io.Reader) (string, error) {
-		h, err := Solve(256, rd)
-		if err != nil {
-			return "", err
-		}
-		s := strconv.Itoa(h)
-		return s, nil
+func SolveSparse(rd io.Reader) (string, error) {
+	h, err := solveSparse(256, NewCommaStream(rd))
+	if err != nil {
+		return "", err
 	}
+	s := strconv.Itoa(h)
+	return s, nil
 }
