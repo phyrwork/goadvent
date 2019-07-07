@@ -10,11 +10,13 @@ import (
 	"github.com/phyrwork/goadvent/day/oneseven/knot"
 	"github.com/phyrwork/goadvent/day/oneseven/passwd"
 	"github.com/phyrwork/goadvent/day/oneseven/stream"
+	"github.com/phyrwork/goadvent/day/onesix/taxi"
 	"log"
 	"os"
 )
 
 var solvers = map[string]app.Solver{
+	"2016.1.1": app.SolverFunc(taxi.SolveDist),
 	"2017.1.1": captcha.NewSolver(captcha.Next),
 	"2017.1.2": captcha.NewSolver(captcha.Half),
 	"2017.2.1": checksum.NewSolver(checksum.Diff),

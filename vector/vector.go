@@ -42,6 +42,14 @@ func Diff(v, w Vector) Vector {
 	return x
 }
 
+func Mult(v Vector, n int) Vector {
+	x := make(Vector, len(v))
+	for d := range v {
+		x[d] = v[d] * n
+	}
+	return x
+}
+
 func Manhattan(v, w Vector) int {
 	a := Abs(Diff(v, w))
 	s := 0
