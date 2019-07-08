@@ -12,6 +12,7 @@ var tests = map[string]struct {
 	steps []Step
 	comp  Compass
 	end   vector.Vector
+	rpt   vector.Vector
 }{
 	"example 1": {
 		"R2, L3\n",
@@ -21,6 +22,7 @@ var tests = map[string]struct {
 		},
 		Compass(North),
 		vector.Vector{2, 3},
+		nil,
 	},
 	"example 2": {
 		"R2, R2, R2\n",
@@ -31,6 +33,7 @@ var tests = map[string]struct {
 		},
 		Compass(North),
 		vector.Vector{0, -2},
+		nil,
 	},
 	"example 3": {
 		"R5, L5, R5, R3\n",
@@ -42,6 +45,19 @@ var tests = map[string]struct {
 		},
 		Compass(North),
 		vector.Vector{10, 2},
+		nil,
+	},
+	"example 4": {
+		"R8, R4, R4, R8\n",
+		[]Step{
+			{Right, 8},
+			{Right, 4},
+			{Right, 4},
+			{Right, 8},
+		},
+		Compass(North),
+		vector.Vector{4, 4},
+		vector.Vector{4, 0},
 	},
 }
 
@@ -67,6 +83,18 @@ func TestWalk(t *testing.T) {
 			got := Walk(c, test.steps...)
 			if !reflect.DeepEqual(got, test.end) {
 				t.Fatalf("unexpected vector: want %v, got %v", test.end, got)
+			}
+		})
+	}
+}
+
+func TestWalkUntilRevisit(t *testing.T) {
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			c := Compass(North)
+			got := WalkUntilRevisit(c, test.steps...)
+			if !reflect.DeepEqual(got, test.rpt) {
+				t.Fatalf("unexpected vector: want %v, got %v", test.rpt, got)
 			}
 		})
 	}

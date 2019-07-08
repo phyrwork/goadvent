@@ -5,6 +5,7 @@ import (
 	"github.com/alecthomas/participle"
 	"github.com/alecthomas/participle/lexer"
 	"github.com/alecthomas/participle/lexer/ebnf"
+	"github.com/phyrwork/goadvent/app"
 	"github.com/phyrwork/goadvent/vector"
 	"io"
 	"strconv"
@@ -84,22 +85,63 @@ func (d Compass) Vector() vector.Vector {
 	}
 }
 
-func Walk(c Compass, s ...Step) vector.Vector {
+func WalkUntil(u func (vector.Vector) bool, c Compass, s ...Step) (vector.Vector, bool) {
 	v := vector.Vector{0, 0}
+	if u != nil && u(v) {
+		return v, true
+	}
 	for _, s := range s {
 		c = c.Turn(s.Dir)
-		w := vector.Mult(c.Vector(), s.Dist)
-		v = vector.Sum(v, w)
+		for n := 0; n < s.Dist; n++ {
+			v = vector.Sum(v, c.Vector())
+			if u != nil && u(v) {
+				return v, true
+			}
+		}
 	}
+	return v, false
+}
+
+func Walk(c Compass, s ...Step) vector.Vector {
+	v, _ := WalkUntil(nil, c, s...)
 	return v
 }
 
-func SolveDist(r io.Reader) (string, error) {
+func WalkUntilRevisit(c Compass, s ...Step) vector.Vector {
+	m := map[[2]int]struct{}{}
+	v, r := WalkUntil(func (v vector.Vector) bool {
+		w := [2]int{v[0], v[1]}
+		if _, ok := m[w]; ok {
+			return true
+		}
+		m[w] = struct{}{}
+		return false
+	}, c, s...)
+	if r {
+		return v
+	}
+	return nil
+}
+
+func Solve(r io.Reader, f func (c Compass, s ...Step) vector.Vector) (int, error) {
 	s, err := Read(r)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	v := Walk(North, s...)
+	v := f(North, s...)
+	if v == nil {
+		return 0, fmt.Errorf("nil vector")
+	}
 	d := vector.Manhattan(vector.Vector{0, 0}, v)
-	return strconv.Itoa(d), nil
+	return d, nil
+}
+
+func NewSolver(f func (c Compass, s ...Step) vector.Vector) app.SolverFunc {
+	return func (r io.Reader) (string, error) {
+		d, err := Solve(r, f)
+		if err != nil {
+			return "", err
+		}
+		return strconv.Itoa(d), nil
+	}
 }

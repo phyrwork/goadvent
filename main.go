@@ -16,7 +16,8 @@ import (
 )
 
 var solvers = map[string]app.Solver{
-	"2016.1.1": app.SolverFunc(taxi.SolveDist),
+	"2016.1.1": taxi.NewSolver(taxi.Walk),
+	"2016.1.2": taxi.NewSolver(taxi.WalkUntilRevisit),
 	"2017.1.1": captcha.NewSolver(captcha.Next),
 	"2017.1.2": captcha.NewSolver(captcha.Half),
 	"2017.2.1": checksum.NewSolver(checksum.Diff),
