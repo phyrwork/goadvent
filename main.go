@@ -19,7 +19,8 @@ import (
 var solvers = map[string]app.Solver{
 	"2016.1.1": taxi.NewSolver(taxi.Walk),
 	"2016.1.2": taxi.NewSolver(taxi.WalkUntilRevisit),
-	"2016.6.1": app.SolverFunc(noise.Solve),
+	"2016.6.1": noise.NewSolver(noise.NewColumnDecoder(noise.Mode)),
+	"2016.6.2": noise.NewSolver(noise.NewColumnDecoder(noise.InvMode)),
 	"2017.1.1": captcha.NewSolver(captcha.Next),
 	"2017.1.2": captcha.NewSolver(captcha.Half),
 	"2017.2.1": checksum.NewSolver(checksum.Diff),

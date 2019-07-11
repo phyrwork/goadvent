@@ -2,12 +2,11 @@ package noise
 
 import (
 	"fmt"
+	"github.com/phyrwork/goadvent/app"
 	"io"
 )
 
-type DecodeFunc func (r Reader) (string, error)
-
-func DecodeMode(r Reader) (string, error) {
+func newColumnMap(r Reader) ([]map[rune]int, error) {
 	var m []map[rune]int
 	add := func (s string) {
 		for i, r := range s {
@@ -25,30 +24,57 @@ func DecodeMode(r Reader) (string, error) {
 	for r.Next() {
 		s := r.String()
 		if len(s) != len(m) {
-			return "", fmt.Errorf("word length mismatch: started %v, found %v", len(m), len(s))
+			return nil, fmt.Errorf("word length mismatch: started %v, found %v", len(m), len(s))
 		}
 		add(s)
 	}
 	if err := r.Err(); err != nil {
-		return "", fmt.Errorf("reader error: %v", err)
+		return m, fmt.Errorf("reader error: %v", err)
 	}
-	max := func (c map[rune]int) (rune, int) {
-		r, m := '?', 0
-		for s, n := range c {
-			if n > m {
-				r, m = s, n
-			}
-		}
-		return r, m
-	}
-	a := make([]rune, len(m))
-	for i := range m {
-		a[i], _ = max(m[i])
-	}
-	return string(a), nil
+	return m, nil
 }
 
-func Solve(r io.Reader) (string, error) {
-	sc := NewScanner(r)
-	return DecodeMode(sc)
+type ColumnDecoder func (map[rune]int) (rune, int)
+
+func Mode(c map[rune]int) (rune, int) {
+	r, m := '?', 0
+	for s, n := range c {
+		if n > m {
+			r, m = s, n
+		}
+	}
+	return r, m
+}
+
+func InvMode(c map[rune]int) (rune, int) {
+	r, m := '?', int(^uint(0) >> 1)
+	for s, n := range c {
+		if n < m {
+			r, m = s, n
+		}
+	}
+	return r, m
+}
+
+type WordDecoder func (r Reader) (string, error)
+
+func NewColumnDecoder(d ColumnDecoder) WordDecoder {
+	return func (r Reader) (string, error) {
+		m, err := newColumnMap(r)
+		if err != nil {
+			return "", err
+		}
+		a := make([]rune, len(m))
+		for i := range m {
+			a[i], _ = d(m[i])
+		}
+		return string(a), nil
+	}
+}
+
+func NewSolver(d WordDecoder) app.SolverFunc {
+	return func (r io.Reader) (string, error) {
+		sc := NewScanner(r)
+		return d(sc)
+	}
 }
