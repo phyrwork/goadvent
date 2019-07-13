@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/phyrwork/goadvent/app"
+	"github.com/phyrwork/goadvent/day/onefive/houses"
 	"github.com/phyrwork/goadvent/day/oneseven/captcha"
 	"github.com/phyrwork/goadvent/day/oneseven/checksum"
 	"github.com/phyrwork/goadvent/day/oneseven/hex"
@@ -17,6 +18,7 @@ import (
 )
 
 var solvers = map[string]app.Solver{
+	"2015.3.1": houses.NewSolver(houses.CountUnique),
 	"2016.1.1": taxi.NewSolver(taxi.Walk),
 	"2016.1.2": taxi.NewSolver(taxi.WalkUntilRevisit),
 	"2016.6.1": noise.NewSolver(noise.NewColumnDecoder(noise.Mode)),
