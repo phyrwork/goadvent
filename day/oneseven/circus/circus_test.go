@@ -19,7 +19,7 @@ var example = []Descriptor{
 }
 
 func TestCircus_Base(t *testing.T) {
-	c, err := New(example...)
+	c, err := NewCircus(example...)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -32,3 +32,28 @@ func TestCircus_Base(t *testing.T) {
 		t.Fatalf("unexpected base: want %v, got %v", want, bt.Name)
 	}
 }
+
+func TestCircus_Balance(t *testing.T) {
+	c, err := NewCircus(example...)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	want := map[string]int{"ugml": 60}
+	got, err := c.Balance()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(got) != len(want) {
+		t.Fatalf("unexpected balance count: want %v, got %v", len(want), len(got))
+	}
+	for ts, twg := range got {
+		tww, ok := want[ts]
+		if !ok {
+			t.Fatalf("unexpected tower balanced: %v", ts)
+		}
+		if twg != tww {
+			t.Fatalf("unexpected weight, tower %v: want %v, got %v", ts, tww, twg)
+		}
+	}
+}
+

@@ -6,6 +6,7 @@ import (
 	"gonum.org/v1/gonum/graph/iterator"
 	"gonum.org/v1/gonum/graph/simple"
 	"gonum.org/v1/gonum/graph/topo"
+	"gonum.org/v1/gonum/graph/traverse"
 	"log"
 	"strconv"
 )
@@ -30,9 +31,78 @@ type Tower struct {
 
 func (t *Tower) ID() int64 { return fromBase36(t.Name) }
 
+// Subweight gives the weight of the tower including its subtowers
+func (t *Tower) Subweight() int {
+	w := 0
+	for _, st := range t.Subtowers {
+		w += st.Subweight()
+	}
+	return w + t.Weight
+}
+
+func (t *Tower) Balanced() bool {
+	w := make(map[int]struct{})
+	for _, st := range t.Subtowers {
+		w[st.Subweight()] = struct{}{}
+	}
+	// 0: no subtowers
+	// 1: one common subtower weight
+	// 2: multiple subtower weights
+	return len(w) < 2
+}
+
+func (t *Tower) Balance() (string, int, bool, error) {
+	w := make(map[int][]*Tower)
+	for _, st := range t.Subtowers {
+		sw := st.Subweight()
+		w[sw] = append(w[sw], st)
+	}
+	switch len(w) {
+	case 0, 1: // Nothing to do
+		return "", 0, false, nil
+	case 2: // Can balance
+		break
+	default: // Can't balance
+		return "", 0, false, fmt.Errorf(
+			"unable to balance tower %v: has more than two (%v) subtower weights", t.Name, len(w))
+	}
+	var tw, uw int // Target, unique weights
+	var tt *Tower  // Target tower (to balance)
+	for sw, sts := range w {
+		if len(sts) == 1 {
+			// Unique weight
+			tt, uw = sts[0], sw
+		} else {
+			tw = sw
+		}
+	}
+	if tt == nil {
+		log.Panicf("balance error: nil target tower")
+	}
+	// Balance
+	tt.Weight += tw - uw
+	return tt.Name, tt.Weight, true, nil
+}
+
+func (t *Tower) Describe() Descriptor {
+	d := Descriptor{
+		Id: t.Name,
+		Weight: t.Weight,
+		Subtowers: make([]string, len(t.Subtowers)),
+	}
+	for i := range t.Subtowers {
+		d.Subtowers[i] = t.Subtowers[i].Name
+	}
+	return d
+}
+
+// Circus implements the graph.Directed interface to enable
+// a graph top-sort.
+//
+// Frustratingly, it seems most of the implementation isn't required.
 type Circus map[string]*Tower
 
-func New(descs ...Descriptor) (Circus, error) {
+func NewCircus(descs ...Descriptor) (Circus, error) {
 	// Potentially circular data, so do a two-pass initialize
 	// First create tower map
 	c := make(Circus, len(descs))
@@ -52,6 +122,19 @@ func New(descs ...Descriptor) (Circus, error) {
 		}
 	}
 	return c, nil
+}
+
+func (c Circus) Describe() []Descriptor {
+	descs := make([]Descriptor, 0, len(c))
+	for _, t := range c {
+		descs = append(descs, t.Describe())
+	}
+	return descs
+}
+
+func (c Circus) Clone() (Circus, error) {
+	descs := c.Describe()
+	return NewCircus(descs...)
 }
 
 func (c Circus) Node(ui int64) graph.Node { return c[toBase36(ui)] }
@@ -124,4 +207,42 @@ func (c Circus) Base() (*Tower, error) {
 		return nil, nil
 	}
 	return n[0].(*Tower), nil
+}
+
+func (c Circus) Balance() (map[string]int, error) {
+	// Starting at the base
+	bt, err := c.Base()
+	if err != nil {
+		return nil, err
+	}
+	if bt.Balanced() {
+		return nil, nil
+	}
+	// Traverse the graph and find a list of all unbalanced nodes in depth order
+	ub := []*Tower{bt}
+	df := traverse.BreadthFirst{}
+	df.EdgeFilter = func(e graph.Edge) bool { return e.To().(*Tower).Balanced() == false }
+	df.Visit = func(_, v graph.Node) { ub = append(ub, v.(*Tower)) }
+	df.Walk(c, bt, nil)
+	// Work backwards (deepest first) adjusting up to one subtower weight
+	// so that the tower is balanced.
+	// Keep a log of modified towers to give as the solution.
+	mod := make(map[string]int)
+	for i := len(ub); i > 0; {
+		i--
+		t := ub[i]
+		// Tower may not need balancing still
+		if t.Balanced() {
+			continue
+		}
+		ts, tw, balanced, err := t.Balance()
+		if err != nil {
+			return nil, err
+		}
+		if !balanced {
+			log.Panicf("didn't balance unbalanced tower")
+		}
+		mod[ts] = tw
+	}
+	return mod, nil
 }
