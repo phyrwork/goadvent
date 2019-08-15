@@ -221,8 +221,8 @@ func (c Circus) Balance() (map[string]int, error) {
 	// Traverse the graph and find a list of all unbalanced nodes in depth order
 	ub := []*Tower{bt}
 	df := traverse.BreadthFirst{}
-	df.EdgeFilter = func(e graph.Edge) bool { return e.To().(*Tower).Balanced() == false }
-	df.Visit = func(_, v graph.Node) { ub = append(ub, v.(*Tower)) }
+	df.Traverse = func(e graph.Edge) bool { return e.To().(*Tower).Balanced() == false }
+	df.Visit = func(v graph.Node) { ub = append(ub, v.(*Tower)) }
 	df.Walk(c, bt, nil)
 	// Work backwards (deepest first) adjusting up to one subtower weight
 	// so that the tower is balanced.
