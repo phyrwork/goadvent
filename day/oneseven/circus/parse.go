@@ -8,7 +8,7 @@ import (
 )
 
 type Descriptor struct {
-	Id        string   `@Identifier`
+	Id        string   `@Identifier` // TODO: rename 'Name', update locals
 	Weight    int      `"(" @Integer ")"`
 	Subtowers []string `("-" ">" @Identifier ("," @Identifier)*)?`
 }
