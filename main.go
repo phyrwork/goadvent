@@ -14,6 +14,7 @@ import (
 	"github.com/phyrwork/goadvent/day/oneseven/plumber"
 	"github.com/phyrwork/goadvent/day/oneseven/realloc"
 	"github.com/phyrwork/goadvent/day/oneseven/registers"
+	"github.com/phyrwork/goadvent/day/oneseven/spinlock"
 	"github.com/phyrwork/goadvent/day/oneseven/stream"
 	"github.com/phyrwork/goadvent/day/onesix/noise"
 	"github.com/phyrwork/goadvent/day/onesix/taxi"
@@ -49,6 +50,8 @@ var solvers = map[string]app.Solver{
 	"2017.11.2": hex.NewSolver(hex.MaxDist),
 	"2017.12.1": app.SolverFunc(plumber.SolveSize),
 	"2017.12.2": app.SolverFunc(plumber.SolveCount),
+	"2017.17.1": spinlock.NewSolver(func () <-chan int { return spinlock.NewSequence(1, 2017) }, spinlock.Next),
+	"2017.17.2": spinlock.NewSolver(func () <-chan int { return spinlock.NewSequence(1, 50000000) }, spinlock.ZeroNext),
 }
 
 func main() {
