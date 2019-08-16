@@ -12,6 +12,7 @@ import (
 	"github.com/phyrwork/goadvent/day/oneseven/knot"
 	"github.com/phyrwork/goadvent/day/oneseven/passwd"
 	"github.com/phyrwork/goadvent/day/oneseven/plumber"
+	"github.com/phyrwork/goadvent/day/oneseven/realloc"
 	"github.com/phyrwork/goadvent/day/oneseven/registers"
 	"github.com/phyrwork/goadvent/day/oneseven/stream"
 	"github.com/phyrwork/goadvent/day/onesix/noise"
@@ -34,6 +35,8 @@ var solvers = map[string]app.Solver{
 	"2017.4.2": passwd.NewSolver(passwd.UniqAnagrams),
 	"2017.5.1": jump.NewSolver(jump.Jump),
 	"2017.5.2": jump.NewSolver(jump.StrangeJump),
+	"2017.6.1": app.SolverFunc(realloc.SolveFirst),
+	"2017.6.2": app.SolverFunc(realloc.SolveSize),
 	"2017.7.1": circus.NewSolver(circus.SolveBase),
 	"2017.7.2": circus.NewSolver(circus.SolveWeight),
 	"2017.8.1": app.SolverFunc(registers.SolveMaxEnd),
