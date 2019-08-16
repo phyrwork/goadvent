@@ -11,6 +11,7 @@ import (
 	"github.com/phyrwork/goadvent/day/oneseven/jump"
 	"github.com/phyrwork/goadvent/day/oneseven/knot"
 	"github.com/phyrwork/goadvent/day/oneseven/passwd"
+	"github.com/phyrwork/goadvent/day/oneseven/plumber"
 	"github.com/phyrwork/goadvent/day/oneseven/registers"
 	"github.com/phyrwork/goadvent/day/oneseven/stream"
 	"github.com/phyrwork/goadvent/day/onesix/noise"
@@ -43,6 +44,8 @@ var solvers = map[string]app.Solver{
 	"2017.10.2": app.SolverFunc(knot.KnotHash),
 	"2017.11.1": hex.NewSolver(hex.Sum),
 	"2017.11.2": hex.NewSolver(hex.MaxDist),
+	"2017.12.1": app.SolverFunc(plumber.SolveSize),
+	"2017.12.2": app.SolverFunc(plumber.SolveCount),
 }
 
 func main() {
