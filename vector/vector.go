@@ -2,6 +2,40 @@ package vector
 
 type Vector []int
 
+// Cmp returns true if the given vectors have equal length and value
+func Cmp(a, b Vector) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for d := range a {
+		if a[d] != b[d] {
+			return false
+		}
+	}
+	return true
+}
+
+// Eq returns true if the given vectors have equal value
+func Eq(a, b Vector) bool {
+	var l, m Vector
+	if len(a) > len(b) {
+		l, m = a, b
+	} else {
+		l, m = b, a
+	}
+	for d := 0; d < len(m); d++ {
+		if l[d] != m[d] {
+			return false
+		}
+	}
+	for d := len(m); d < len(l); d++ {
+		if l[d] != 0 {
+			return false
+		}
+	}
+	return true
+}
+
 func Abs(v Vector) Vector {
 	x := make(Vector, len(v))
 	copy(x, v)
