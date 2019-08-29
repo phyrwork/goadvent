@@ -1,4 +1,4 @@
-package maps
+package set
 
 type Set map[interface{}]struct{}
 

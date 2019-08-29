@@ -1,4 +1,4 @@
-package maps
+package bimap
 
 import (
 	"reflect"

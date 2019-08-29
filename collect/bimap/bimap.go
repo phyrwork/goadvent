@@ -1,6 +1,9 @@
-package maps
+package bimap
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/phyrwork/goadvent/collect/set"
+)
 
 type Bimap struct {
 	v map[interface{}]interface{} // key -> val
@@ -33,8 +36,8 @@ func (m Bimap) Value(k interface{}) (interface{}, bool) {
 	return v, ok
 }
 
-func (m Bimap) Values() Set {
-	n := make(Set)
+func (m Bimap) Values() set.Set {
+	n := make(set.Set)
 	for _, v := range m.v {
 		n[v] = struct{}{}
 	}
@@ -47,8 +50,8 @@ func (m Bimap) Key(v interface{}) (interface{}, bool) {
 
 }
 
-func (m Bimap) Keys() Set {
-	n := make(Set)
+func (m Bimap) Keys() set.Set {
+	n := make(set.Set)
 	for _, k := range m.k {
 		n[k] = struct{}{}
 	}
