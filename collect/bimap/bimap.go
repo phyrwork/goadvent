@@ -9,10 +9,10 @@ type Bimap struct {
 	k map[interface{}]interface{} // val -> key
 }
 
-func New() *Bimap {
+func New() Bimap {
 	v := make(map[interface{}]interface{})
 	k := make(map[interface{}]interface{})
-	return &Bimap{v, k}
+	return Bimap{v, k}
 }
 
 func (m Bimap) Len() int { return len(m.v) }
