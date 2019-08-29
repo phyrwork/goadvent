@@ -5,30 +5,8 @@ import (
 	"testing"
 )
 
-var setTests = map[string]struct{
-	k []interface{}
-	v []interface{}
-	p []struct{K, V interface{}}
-}{
-	"empty": {
-		[]interface{}{},
-		[]interface{}{},
-		[]struct{K, V interface{}}{},
-	},
-	"mirror": {
-		[]interface{}{1, 2},
-		[]interface{}{2, 1},
-		[]struct{K, V interface{}}{{1, 2}, {2, 1}},
-	},
-	"sequence": {
-		[]interface{}{1, 2, 3},
-		[]interface{}{4, 5, 6},
-		[]struct{K, V interface{}}{{1, 4}, {2, 5},  {3, 6}},
-	},
-}
-
 func TestSet_Values(t *testing.T) {
-	for name, test := range setTests {
+	for name, test := range delegateTests {
 		t.Run(name, func(t *testing.T) {
 			want := setFromSlice(test.v...)
 			m := bimapFromSlice(test.p...)
@@ -42,7 +20,7 @@ func TestSet_Values(t *testing.T) {
 }
 
 func TestSet_Keys(t *testing.T) {
-	for name, test := range setTests {
+	for name, test := range delegateTests {
 		t.Run(name, func(t *testing.T) {
 			want := setFromSlice(test.k...)
 			m := bimapFromSlice(test.p...)
@@ -56,7 +34,7 @@ func TestSet_Keys(t *testing.T) {
 }
 
 func TestSet_Pairs(t *testing.T) {
-	for name, test := range setTests {
+	for name, test := range delegateTests {
 		t.Run(name, func(t *testing.T) {
 			p := make([]interface{}, len(test.p))
 			for i := range test.p {
@@ -67,7 +45,7 @@ func TestSet_Pairs(t *testing.T) {
 			d := Set{m}
 			got := d.Pairs()
 			if !reflect.DeepEqual(want, got) {
-				t.Fatalf("unexpected pairs: want %v, got %v", want, got)
+				t.Fatalf("unexpected delegateTests: want %v, got %v", want, got)
 			}
 		})
 	}
