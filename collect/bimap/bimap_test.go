@@ -5,38 +5,27 @@ import (
 	"testing"
 )
 
-type pair struct { K, V interface{} }
-
-func newBimap(p ...pair) *Bimap {
-	v := make(map[interface{}]interface{})
-	k := make(map[interface{}]interface{})
-	for _, p := range p {
-		v[p.K], k[p.V] = p.V, p.K
-	}
-	return &Bimap{v, k}
-}
-
 func TestBimap_Set(t *testing.T) {
 	tests := map[string]struct {
-		init []pair
+		init []struct{K, V interface{}}
 		k, v interface{}
-		want []pair
+		want []struct{K, V interface{}}
 		err  bool
 	}{
 		"new": {
-			[]pair{},
+			[]struct{K, V interface{}}{},
 			1, 2,
-			[]pair{{1, 2}},
+			[]struct{K, V interface{}}{{1, 2}},
 			false,
 		},
 		"key exists (same)": {
-			[]pair{{1, 2}},
+			[]struct{K, V interface{}}{{1, 2}},
 			1, 2,
-			[]pair{{1, 2}},
+			[]struct{K, V interface{}}{{1, 2}},
 			false,
 		},
 		"key exists (diff)": {
-			[]pair{{1, 2}},
+			[]struct{K, V interface{}}{{1, 2}},
 			1, 3,
 			nil,
 			true,
@@ -44,8 +33,8 @@ func TestBimap_Set(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			want := newBimap(test.want...)
-			got := newBimap(test.init...)
+			want := bimapFromSlice(test.want...)
+			got := bimapFromSlice(test.init...)
 			err := got.Set(test.k, test.v)
 			if test.err {
 				if err == nil {

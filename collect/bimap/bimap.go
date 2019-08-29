@@ -2,7 +2,6 @@ package bimap
 
 import (
 	"fmt"
-	"github.com/phyrwork/goadvent/collect/set"
 )
 
 type Bimap struct {
@@ -10,11 +9,13 @@ type Bimap struct {
 	k map[interface{}]interface{} // val -> key
 }
 
-func NewBimap() *Bimap {
+func New() *Bimap {
 	v := make(map[interface{}]interface{})
 	k := make(map[interface{}]interface{})
 	return &Bimap{v, k}
 }
+
+func (m Bimap) Len() int { return len(m.v) }
 
 func (m Bimap) Set(k, v interface{}) error {
 	if e, ok := m.v[k]; ok && e != v {
@@ -36,26 +37,10 @@ func (m Bimap) Value(k interface{}) (interface{}, bool) {
 	return v, ok
 }
 
-func (m Bimap) Values() set.Set {
-	n := make(set.Set)
-	for _, v := range m.v {
-		n[v] = struct{}{}
-	}
-	return n
-}
-
 func (m Bimap) Key(v interface{}) (interface{}, bool) {
 	k, ok := m.k[v]
 	return k, ok
 
-}
-
-func (m Bimap) Keys() set.Set {
-	n := make(set.Set)
-	for _, k := range m.k {
-		n[k] = struct{}{}
-	}
-	return n
 }
 
 func (m Bimap) Map() map[interface{}]interface{} {
@@ -69,14 +54,6 @@ func (m Bimap) Map() map[interface{}]interface{} {
 func (m Bimap) Pair(k interface{}) (struct {K, V interface{}}, bool) {
 	v, ok := m.v[k]
 	return struct {K, V interface{}}{k, v}, ok
-}
-
-func (m Bimap) Pairs() []struct {K, V interface{}} {
-	p := make([]struct {K, V interface{}}, 0, len(m.v))
-	for k, v := range m.v {
-		p = append(p, struct{K, V interface{}}{k, v})
-	}
-	return p
 }
 
 func (m Bimap) Inv() *Bimap { return &Bimap{m.k, m.v} }
