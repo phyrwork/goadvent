@@ -22,6 +22,7 @@ type Range struct {
 	s, e Vector
 }
 
+// TODO: Make Range nil-able, nil-safe
 func NewRange(a, b Vector) Range {
 	var l, m Vector // long, min (len)
 	if len(a) > len(b) {
@@ -59,6 +60,21 @@ func (r Range) End() Vector {
 	e := make(Vector, len(r.e))
 	copy(e, r.e)
 	return e
+}
+
+func (r Range) Size() Vector {
+	// TODO: if nil return nil
+	d := Diff(r.e, r.s)
+	// If Range is valid then all represented dimensions are at least size 1
+	for i := range d {
+		d[i] += 1
+	}
+	return d
+}
+
+func (r Range) Offset(o Vector) Range {
+	s, e := Sum(r.s, o), Sum(r.e, o)
+	return Range{s, e}
 }
 
 func (r Range) Contains(a Vector) bool {

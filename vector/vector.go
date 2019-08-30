@@ -71,6 +71,7 @@ func Diff(v, w Vector) Vector {
 	x := make(Vector, d)
 	copy(x, w)
 	for d := range v {
+		// w - v
 		x[d] -= v[d]
 	}
 	return x
