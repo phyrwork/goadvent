@@ -9,6 +9,8 @@ type Bimap struct {
 	k map[interface{}]interface{} // val -> key
 }
 
+
+// TODO: from pairs
 func New() Bimap {
 	v := make(map[interface{}]interface{})
 	k := make(map[interface{}]interface{})
@@ -32,11 +34,13 @@ func (m Bimap) Clear(k interface{}) {
 	}
 }
 
+// TODO: interface{} is pointer type, don't need to return ok bool
 func (m Bimap) Value(k interface{}) (interface{}, bool) {
 	v, ok := m.v[k]
 	return v, ok
 }
 
+// TODO: interface{} is pointer type, don't need to return ok bool
 func (m Bimap) Key(v interface{}) (interface{}, bool) {
 	k, ok := m.k[v]
 	return k, ok
@@ -51,9 +55,11 @@ func (m Bimap) Map() map[interface{}]interface{} {
 	return n
 }
 
+// TODO: interface{} is pointer type, don't need to return ok bool
 func (m Bimap) Pair(k interface{}) (struct {K, V interface{}}, bool) {
 	v, ok := m.v[k]
 	return struct {K, V interface{}}{k, v}, ok
 }
 
+// TODO: return value type
 func (m Bimap) Inv() *Bimap { return &Bimap{m.k, m.v} }

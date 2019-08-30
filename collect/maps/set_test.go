@@ -1,6 +1,7 @@
-package bimap
+package maps
 
 import (
+	"github.com/phyrwork/goadvent/collect/set"
 	"reflect"
 	"testing"
 )
@@ -8,8 +9,8 @@ import (
 func TestSet_Values(t *testing.T) {
 	for name, test := range delegateTests {
 		t.Run(name, func(t *testing.T) {
-			want := setFromSlice(test.v...)
-			m := bimapFromSlice(test.p...)
+			want := set.New(test.v...)
+			m := New(test.p...)
 			d := Set{m}
 			got := d.Values()
 			if !reflect.DeepEqual(want, got) {
@@ -22,8 +23,8 @@ func TestSet_Values(t *testing.T) {
 func TestSet_Keys(t *testing.T) {
 	for name, test := range delegateTests {
 		t.Run(name, func(t *testing.T) {
-			want := setFromSlice(test.k...)
-			m := bimapFromSlice(test.p...)
+			want := set.New(test.k...)
+			m := New(test.p...)
 			d := Set{m}
 			got := d.Keys()
 			if !reflect.DeepEqual(want, got) {
@@ -40,8 +41,8 @@ func TestSet_Pairs(t *testing.T) {
 			for i := range test.p {
 				p[i] = test.p[i]
 			}
-			want := setFromSlice(p...)
-			m := bimapFromSlice(test.p...)
+			want := set.New(p...)
+			m := New(test.p...)
 			d := Set{m}
 			got := d.Pairs()
 			if !reflect.DeepEqual(want, got) {

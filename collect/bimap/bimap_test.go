@@ -45,7 +45,7 @@ func TestBimap_Set(t *testing.T) {
 					t.Fatalf("unexpected error: %v", err)
 				}
 				if !reflect.DeepEqual(want, got) {
-					t.Fatalf("unexpected map: want %#v, got %#v", want, got)
+					t.Fatalf("unexpected maps: want %#v, got %#v", want, got)
 				}
 			}
 		})
