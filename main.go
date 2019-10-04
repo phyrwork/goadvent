@@ -17,6 +17,7 @@ import (
 	"github.com/phyrwork/goadvent/day/oneseven/spinlock"
 	"github.com/phyrwork/goadvent/day/oneseven/stream"
 	"github.com/phyrwork/goadvent/day/onesix/keypad"
+	"github.com/phyrwork/goadvent/day/onesix/kiosk"
 	"github.com/phyrwork/goadvent/day/onesix/noise"
 	"github.com/phyrwork/goadvent/day/onesix/taxi"
 	"log"
@@ -29,6 +30,8 @@ var solvers = map[string]app.Solver{
 	"2016.1.2": taxi.NewSolver(taxi.WalkUntilRevisit),
 	"2016.2.1": keypad.NewSolver(keypad.SquareKeypad, keypad.Position{1, 1}),
 	"2016.2.2": keypad.NewSolver(keypad.DiamondKeypad, keypad.Position{0, 2}),
+	"2016.4.1": app.SolverFunc(kiosk.SolveSumReal),
+	"2016.4.2": app.SolverFunc(kiosk.SolveNorthPoleRoom),
 	"2016.6.1": noise.NewSolver(noise.NewColumnDecoder(noise.Mode)),
 	"2016.6.2": noise.NewSolver(noise.NewColumnDecoder(noise.InvMode)),
 	"2017.1.1": captcha.NewSolver(captcha.Next),
