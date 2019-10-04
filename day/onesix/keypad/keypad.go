@@ -3,6 +3,7 @@ package keypad
 import (
 	"bufio"
 	"fmt"
+	"github.com/phyrwork/goadvent/app"
 	"github.com/phyrwork/goadvent/vector"
 	"io"
 )
@@ -19,7 +20,7 @@ func (p Position) Move(q Position) Position {
 	return NewPosition(vector.Sum(p[:], q[:])...)
 }
 
-type Keypad map[Position]int
+type Keypad map[Position]rune
 
 type Cursor struct {
 	kp Keypad
@@ -33,7 +34,7 @@ func NewCursor(kp Keypad, start Position) (*Cursor, error) {
 	return &Cursor{kp, start}, nil
 }
 
-func (cur Cursor) Key() int { return cur.kp[cur.p] }
+func (cur Cursor) Key() rune { return cur.kp[cur.p] }
 
 func (cur *Cursor) Move(q Position) {
 	p := cur.p.Move(q)
@@ -50,15 +51,19 @@ const EOF rune = -1
 
 type Decoder struct {
 	gr  Grammar
-	cur Cursor
-	out []int
+	cur *Cursor
+	out []rune
 }
 
-func NewDecoder(gr Grammar, kp Keypad, cur Position) *Decoder {
+func NewDecoder(gr Grammar, kp Keypad, sp Position) *Decoder {
+	cur, err := NewCursor(kp, sp)
+	if err != nil {
+		return nil
+	}
 	return &Decoder{
 		gr:  gr,
-		cur: Cursor{kp, cur},
-		out: make([]int, 0),
+		cur: cur,
+		out: make([]rune, 0),
 	}
 }
 
@@ -84,8 +89,8 @@ func (d *Decoder) Decode(r io.Reader) error {
 	return nil
 }
 
-func (d *Decoder) Out() []int {
-	out := make([]int, len(d.out))
+func (d *Decoder) Out() []rune {
+	out := make([]rune, len(d.out))
 	copy(out, d.out)
 	return out
 }
@@ -99,28 +104,44 @@ var DefaultGrammar = Grammar{
 	EOF: func (d *Decoder) { d.Emit() },
 }
 
-var DefaultKeypad = Keypad{
-	{0, 2}: 1,
-	{1, 2}: 2,
-	{2, 2}: 3,
-	{0, 1}: 4,
-	{1, 1}: 5,
-	{2, 1}: 6,
-	{0, 0}: 7,
-	{1, 0}: 8,
-	{2, 0}: 9,
+var SquareKeypad = Keypad{
+	{0, 2}: '1',
+	{1, 2}: '2',
+	{2, 2}: '3',
+	{0, 1}: '4',
+	{1, 1}: '5',
+	{2, 1}: '6',
+	{0, 0}: '7',
+	{1, 0}: '8',
+	{2, 0}: '9',
 }
 
-var DefaultPosition = Position{1, 1}
+var DiamondKeypad = Keypad{
+	{2, 4}: '1',
+	{1, 3}: '2',
+	{2, 3}: '3',
+	{3, 3}: '4',
+	{0, 2}: '5',
+	{1, 2}: '6',
+	{2, 2}: '7',
+	{3, 2}: '8',
+	{4, 2}: '9',
+	{1, 1}: 'A',
+	{2, 1}: 'B',
+	{3, 1}: 'C',
+	{2, 0}: 'D',
+}
 
-func Solve(r io.Reader) (string, error) {
-	dc := NewDecoder(DefaultGrammar, DefaultKeypad, DefaultPosition)
-	if err := dc.Decode(r); err != nil {
-		return "", fmt.Errorf("decode error: %v", err)
+func NewSolver(kp Keypad, sp Position) app.SolverFunc {
+	return func (r io.Reader) (string, error) {
+		dc := NewDecoder(DefaultGrammar, kp, sp)
+		if err := dc.Decode(r); err != nil {
+			return "", fmt.Errorf("decode error: %v", err)
+		}
+		out := make([]rune, 0)
+		for _, k := range dc.Out() {
+			out = append(out, k)
+		}
+		return string(out), nil
 	}
-	out := make([]rune, 0)
-	for _, k := range dc.Out() {
-		out = append(out, rune('0' + k))
-	}
-	return string(out), nil
 }

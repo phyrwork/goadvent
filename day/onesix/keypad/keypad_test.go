@@ -7,18 +7,42 @@ import (
 )
 
 func TestDecoder(t *testing.T) {
-	// with default grammar, keypad and cursor
-	dc := NewDecoder(DefaultGrammar, DefaultKeypad, DefaultPosition)
-	// with example
-	inst := "ULL\nRRDDD\nLURDL\nUUUUD"
-	// go!
-	r := strings.NewReader(inst)
-	if err := dc.Decode(r); err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	tests := []struct {
+		name string
+		gr   Grammar
+		kp   Keypad
+		pos  Position
+		inst string
+		want string
+	}{
+		{
+			"part 1 example",
+			DefaultGrammar,
+			SquareKeypad,
+			Position{1, 1},
+			"ULL\nRRDDD\nLURDL\nUUUUD\n",
+			"1985",
+		},
+		{
+			"part 2 example",
+			DefaultGrammar,
+			DiamondKeypad,
+			Position{0, 2},
+			"ULL\nRRDDD\nLURDL\nUUUUD\n",
+			"5DB3",
+		},
 	}
-	want := []int{1,9,8,5}
-	if got := dc.Out(); !reflect.DeepEqual(want, got) {
-		t.Fatalf("unexpected out: want %v, got %v", want, got)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			dc := NewDecoder(test.gr, test.kp, test.pos)
+			r := strings.NewReader(test.inst)
+			if err := dc.Decode(r); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if got := dc.Out(); !reflect.DeepEqual([]rune(test.want), got) {
+				t.Fatalf("unexpected out: want %v, got %v", []rune(test.want), got)
+			}
+		})
 	}
 }
 
