@@ -12,6 +12,7 @@ import (
 type Generator interface {
 	Next() bool
 	String() string
+	// TODO: should probably add Err() error rather than failing silently with Next() == false
 }
 
 type HashFn func (string) string
@@ -73,6 +74,7 @@ func (g *ZeroesGenerator) Next() bool {
 
 func (g *ZeroesGenerator) String() string { return g.sub.String() }
 
+// TODO: rename AppendGenerator
 type PasswordGenerator struct {
 	zero *ZeroesGenerator
 	len  int
@@ -105,7 +107,53 @@ func (g *PasswordGenerator) Next() bool {
 
 func (g *PasswordGenerator) String() string { return g.out }
 
-func Solve(r io.Reader) (string, error) {
+// for lack of a better name. sue me...
+// TODO: could probably conflate this with PasswordGenerator by specifying an
+//  IndexFn(n int, s string) string
+type FillerGenerator struct {
+	zero *ZeroesGenerator
+	len  int
+	out  string
+}
+
+func NewFillerGenerator(len int, sub Generator, diff int) *FillerGenerator {
+	zero := NewZeroesGenerator(sub, diff)
+	return &FillerGenerator{zero, len, ""}
+}
+
+func (g *FillerGenerator) Next() bool {
+	out := make([]rune, g.len)
+	rem := make(map[int]struct{}) // positions left to fill
+	for i := range out {
+		rem[i] = struct{}{}
+	}
+	for len(rem) > 0 {
+		if !g.zero.Next() {
+			// TODO: error?
+			return false
+		}
+		h := g.zero.String()
+		if len(h) < g.zero.count + 1 {
+			// string not long enough to extract runes from
+			return false
+		}
+		// first rune after zeros now position
+		pos := int([]rune(h)[g.zero.count] - '0')
+		if _, ok := rem[pos]; !ok {
+			// already filled - ignore
+			continue
+		}
+		// fill and mark
+		out[pos] = []rune(h)[g.zero.count + 1]
+		delete(rem, pos)
+	}
+	g.out = string(out)
+	return true
+}
+
+func (g *FillerGenerator) String() string { return g.out }
+
+func SolveAppend(r io.Reader) (string, error) {
 	in, err := ioutil.ReadAll(r)
 	if err != nil {
 		return "", fmt.Errorf("reader error: %v, err")
@@ -113,6 +161,20 @@ func Solve(r io.Reader) (string, error) {
 	key := strings.TrimSpace(string(in))
 	sub := NewHashGenerator(HashMd5, key, 0)
 	gen := NewPasswordGenerator(8, sub, 5)
+	if !gen.Next() {
+		return "", fmt.Errorf("password not generated")
+	}
+	return gen.String(), nil
+}
+
+func SolveFiller(r io.Reader) (string, error) {
+	in, err := ioutil.ReadAll(r)
+	if err != nil {
+		return "", fmt.Errorf("reader error: %v, err")
+	}
+	key := strings.TrimSpace(string(in))
+	sub := NewHashGenerator(HashMd5, key, 0)
+	gen := NewFillerGenerator(8, sub, 5)
 	if !gen.Next() {
 		return "", fmt.Errorf("password not generated")
 	}
