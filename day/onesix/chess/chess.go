@@ -156,7 +156,7 @@ func (g *FillerGenerator) String() string { return g.out }
 func SolveAppend(r io.Reader) (string, error) {
 	in, err := ioutil.ReadAll(r)
 	if err != nil {
-		return "", fmt.Errorf("reader error: %v, err")
+		return "", fmt.Errorf("reader error: %v", err)
 	}
 	key := strings.TrimSpace(string(in))
 	sub := NewHashGenerator(HashMd5, key, 0)
@@ -170,7 +170,7 @@ func SolveAppend(r io.Reader) (string, error) {
 func SolveFiller(r io.Reader) (string, error) {
 	in, err := ioutil.ReadAll(r)
 	if err != nil {
-		return "", fmt.Errorf("reader error: %v, err")
+		return "", fmt.Errorf("reader error: %v", err)
 	}
 	key := strings.TrimSpace(string(in))
 	sub := NewHashGenerator(HashMd5, key, 0)
