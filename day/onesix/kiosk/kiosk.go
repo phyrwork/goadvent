@@ -11,7 +11,7 @@ import (
 var lex = lexer.Must(ebnf.New(`
 	Sep = "\n" .
 	Punct = "-" | "[" | "]" .
-	Word = alpha {alpha} .
+	Text = alpha {alpha} .
 	Int = digit {digit} .
 	alpha = "a"…"z" .
 	digit = "0"…"9" .
@@ -21,9 +21,9 @@ var lex = lexer.Must(ebnf.New(`
 //  separating the room name from the sector with the room name...
 //  fixme!
 type room struct {
-	Name   string `@(Word ("-" Word)*)`
+	Name   string `@(Text ("-" Text)*)`
 	Sector int    `"-" @Int`
-	Hash   string `"[" @Word "]"`
+	Hash   string `"[" @Text "]"`
 }
 
 type rooms struct {

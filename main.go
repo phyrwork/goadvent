@@ -18,6 +18,7 @@ import (
 	"github.com/phyrwork/goadvent/day/oneseven/stream"
 	"github.com/phyrwork/goadvent/day/onesix/abba"
 	"github.com/phyrwork/goadvent/day/onesix/chess"
+	"github.com/phyrwork/goadvent/day/onesix/explosive"
 	"github.com/phyrwork/goadvent/day/onesix/keypad"
 	"github.com/phyrwork/goadvent/day/onesix/kiosk"
 	"github.com/phyrwork/goadvent/day/onesix/noise"
@@ -40,6 +41,8 @@ var solvers = map[string]app.Solver{
 	"2016.6.2": noise.NewSolver(noise.NewColumnDecoder(noise.InvMode)),
 	"2016.7.1": abba.NewSolver(abba.Address.SupportsTLS),
 	"2016.7.2": abba.NewSolver(abba.Address.SupportsSSL),
+	"2016.9.1": explosive.NewSolver(false),
+	"2016.9.2": explosive.NewSolver(true),
 	"2017.1.1": captcha.NewSolver(captcha.Next),
 	"2017.1.2": captcha.NewSolver(captcha.Half),
 	"2017.2.1": checksum.NewSolver(checksum.Diff),
