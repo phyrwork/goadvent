@@ -23,6 +23,7 @@ import (
 	"github.com/phyrwork/goadvent/day/onesix/kiosk"
 	"github.com/phyrwork/goadvent/day/onesix/noise"
 	"github.com/phyrwork/goadvent/day/onesix/taxi"
+	"github.com/phyrwork/goadvent/day/onesix/twisty"
 	"log"
 	"os"
 )
@@ -43,6 +44,8 @@ var solvers = map[string]app.Solver{
 	"2016.7.2": abba.NewSolver(abba.Address.SupportsSSL),
 	"2016.9.1": explosive.NewSolver(false),
 	"2016.9.2": explosive.NewSolver(true),
+	"2016.13.1": twisty.NewShortestSolver(twisty.Coord{1,1}, twisty.Coord{31, 39}),
+	"2016.13.2": twisty.NewSearchSolver(twisty.Coord{1,1}, 50),
 	"2017.1.1": captcha.NewSolver(captcha.Next),
 	"2017.1.2": captcha.NewSolver(captcha.Half),
 	"2017.2.1": checksum.NewSolver(checksum.Diff),
