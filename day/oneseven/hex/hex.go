@@ -7,7 +7,6 @@ import (
 	"github.com/phyrwork/goadvent/vector"
 	"io"
 	"log"
-	"strconv"
 )
 
 // https://www.redblobgames.com/grids/hexagons/#distances
@@ -105,11 +104,11 @@ func Solve(r io.Reader, f AccumulatorFunc) (int, error) {
 }
 
 func NewSolver(f AccumulatorFunc) app.SolverFunc {
-	return func (r io.Reader) (string, error) {
+	return func (r io.Reader) app.Solution {
 		d, err := Solve(r, f)
 		if err != nil {
-			return "", err
+			return app.NewError(err)
 		}
-		return strconv.Itoa(d), nil
+		return app.Int(d)
 	}
 }

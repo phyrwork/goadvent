@@ -2,6 +2,7 @@ package realloc
 
 import (
 	"bufio"
+	"github.com/phyrwork/goadvent/app"
 	"io"
 	"strconv"
 )
@@ -112,24 +113,24 @@ func Parse(r io.Reader) (Memory, error) {
 	return m, nil
 }
 
-func SolveFirst(r io.Reader) (string, error) {
+func SolveFirst(r io.Reader) app.Solution {
 	m, err := Parse(r)
 	if err != nil {
-		return "", err
+		return app.NewError(err)
 	}
 	d := NewDistributor(m)
 	d.Distrib()
-	return strconv.Itoa(d.Cycles()), nil
+	return app.Int(d.Cycles())
 }
 
-func SolveSize(r io.Reader) (string, error) {
+func SolveSize(r io.Reader) app.Solution {
 	m, err := Parse(r)
 	if err != nil {
-		return "", err
+		return app.NewError(err)
 	}
 	d := NewDistributor(m)
 	d.Distrib()
 	d = NewDistributor(m)
 	d.Distrib()
-	return strconv.Itoa(d.Cycles()), nil
+	return app.Int(d.Cycles())
 }

@@ -73,13 +73,13 @@ func Exec(exe Executable) int {
 }
 
 func NewSolver(jmp JumpFunc) app.SolverFunc {
-	return app.SolverFunc(func (r io.Reader) (string, error) {
+	return app.SolverFunc(func (r io.Reader) app.Solution {
 		p, err := ReadProgram(r)
 		if err != nil {
-			return "", err
+			return app.NewError(err)
 		}
 		exe := NewJumper(p, jmp)
 		c := Exec(exe)
-		return strconv.Itoa(c), nil
+		return app.Int(c)
 	})
 }

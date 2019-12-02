@@ -2,7 +2,6 @@ package twisty
 
 import (
 	"bufio"
-	"fmt"
 	"github.com/phyrwork/goadvent/app"
 	"github.com/phyrwork/goadvent/collect/bimap"
 	"github.com/phyrwork/goadvent/vector"
@@ -182,27 +181,27 @@ func Shortest(g *Graph, f Coord, t Coord) []Coord {
 }
 
 func NewShortestSolver(f Coord, t Coord) app.SolverFunc {
-	return func (r io.Reader) (string, error) {
+	return func (r io.Reader) app.Solution {
 		// TODO: conflate solver setup code
 		sc := bufio.NewScanner(r)
 		sc.Split(bufio.ScanWords)
 		if !sc.Scan() {
 			if err := sc.Err(); err != nil {
-				return "", fmt.Errorf("scan error: %v", err)
+				return app.Errorf("scan error: %v", err)
 			} else {
-				return "", fmt.Errorf("empty scan")
+				return app.Errorf("empty scan")
 			}
 		}
 		fav, err := strconv.Atoi(sc.Text())
 		if err != nil {
-			return "", fmt.Errorf("int decode error: %v", err)
+			return app.Errorf("int decode error: %v", err)
 		}
 		g := NewGraph(NewGenerate(fav))
 		route := Shortest(g, f, t)
 		if len(route) == 0 {
-			return "", fmt.Errorf("route not found")
+			return app.Errorf("route not found")
 		}
-		return strconv.Itoa(len(route) - 1), nil
+		return app.Int(len(route) - 1)
 	}
 }
 
@@ -232,23 +231,23 @@ func BreadthFirst(g *Graph, f Coord, d int) map[Coord]int {
 }
 
 func NewSearchSolver(f Coord, d int) app.SolverFunc {
-	return func (r io.Reader) (string, error) {
+	return func (r io.Reader) app.Solution {
 		// TODO: conflate solver setup code
 		sc := bufio.NewScanner(r)
 		sc.Split(bufio.ScanWords)
 		if !sc.Scan() {
 			if err := sc.Err(); err != nil {
-				return "", fmt.Errorf("scan error: %v", err)
+				return app.Errorf("scan error: %v", err)
 			} else {
-				return "", fmt.Errorf("empty scan")
+				return app.Errorf("empty scan")
 			}
 		}
 		fav, err := strconv.Atoi(sc.Text())
 		if err != nil {
-			return "", fmt.Errorf("int decode error: %v", err)
+			return app.Errorf("int decode error: %v", err)
 		}
 		g := NewGraph(NewGenerate(fav))
 		seen := BreadthFirst(g, f, d)
-		return strconv.Itoa(len(seen)), nil
+		return app.Int(len(seen))
 	}
 }

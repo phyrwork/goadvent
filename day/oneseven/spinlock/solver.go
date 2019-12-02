@@ -9,7 +9,7 @@ import (
 )
 
 func NewSolver(c func () <-chan int, v func (*Spinlock) int) app.SolverFunc {
-	return func (r io.Reader) (string, error) {
+	return func (r io.Reader) app.Solution {
 		sc := bufio.NewScanner(r)
 		sc.Split(bufio.ScanWords)
 		var s string
@@ -18,15 +18,15 @@ func NewSolver(c func () <-chan int, v func (*Spinlock) int) app.SolverFunc {
 			break
 		}
 		if err := sc.Err(); err != nil {
-			return "", err
+			return app.NewError(err)
 		}
 		step, err := strconv.Atoi(s)
 		if err != nil {
-			return "", err
+			return app.NewError(err)
 		}
 		l := NewSpinlock(step)
 		l.Stream(c())
-		return strconv.Itoa(v(l)), nil
+		return app.Int(v(l))
 	}
 }
 

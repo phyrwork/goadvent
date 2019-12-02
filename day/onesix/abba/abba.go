@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"github.com/phyrwork/goadvent/app"
 	"io"
-	"strconv"
 )
 
 const (
@@ -140,7 +139,7 @@ func (s *Sequencer) Super() bool { return !s.hyper }
 
 type AddressFilter func (Address) bool
 
-func Solve(r io.Reader, f AddressFilter) (string, error) {
+func Solve(r io.Reader, f AddressFilter) app.Solution {
 	n := 0
 	sc := bufio.NewScanner(r)
 	sc.Split(bufio.ScanLines)
@@ -151,13 +150,13 @@ func Solve(r io.Reader, f AddressFilter) (string, error) {
 		}
 	}
 	if err := sc.Err(); err != nil {
-		return "", err
+		return app.NewError(err)
 	}
-	return strconv.Itoa(n), nil
+	return app.Int(n)
 }
 
 func NewSolver(f AddressFilter) app.SolverFunc {
-	return func (r io.Reader) (string, error) {
+	return func (r io.Reader) app.Solution {
 		return Solve(r, f)
 	}
 }

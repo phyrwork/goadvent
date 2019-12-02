@@ -5,7 +5,6 @@ import (
 	"github.com/phyrwork/goadvent/iterator"
 	"io"
 	"log"
-	"strconv"
 )
 
 type coord struct {
@@ -39,13 +38,13 @@ func CountUnique(it iterator.RuneIterator) (int, error) {
 type RouteFunc func (iterator.RuneIterator) (int, error)
 
 func NewSolver(f RouteFunc) app.SolverFunc {
-	return func (r io.Reader) (string, error) {
+	return func (r io.Reader) app.Solution {
 		sc := iterator.NewRuneScanner(r)
 		sc.Skip = iterator.SkipWhitespace
 		i, err := f(sc)
 		if err != nil {
-			return "", err
+			return app.NewError(err)
 		}
-		return strconv.Itoa(i), nil
+		return app.Int(i)
 	}
 }

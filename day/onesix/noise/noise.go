@@ -56,24 +56,24 @@ func InvMode(c map[rune]int) (rune, int) {
 	return r, m
 }
 
-type WordDecoder func (r Reader) (string, error)
+type WordDecoder func (r Reader) app.Solution
 
 func NewColumnDecoder(d ColumnDecoder) WordDecoder {
-	return func (r Reader) (string, error) {
+	return func (r Reader) app.Solution {
 		m, err := newColumnMap(r)
 		if err != nil {
-			return "", err
+			return app.NewError(err)
 		}
 		a := make([]rune, len(m))
 		for i := range m {
 			a[i], _ = d(m[i])
 		}
-		return string(a), nil
+		return app.String(a)
 	}
 }
 
 func NewSolver(d WordDecoder) app.SolverFunc {
-	return func (r io.Reader) (string, error) {
+	return func (r io.Reader) app.Solution {
 		sc := NewScanner(r)
 		return d(sc)
 	}

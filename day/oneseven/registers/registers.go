@@ -1,30 +1,30 @@
 package registers
 
 import (
+	"github.com/phyrwork/goadvent/app"
 	"io"
-	"strconv"
 )
 
 // TODO: there's a bug when reading from stdin where punctuation e.g. ! or = isn't recognised by the parser
 // TODO: pasting the puzzle input in as a string literal and running in a test produces the correct answer
 
-func SolveMaxEnd(r io.Reader) (string, error) {
+func SolveMaxEnd(r io.Reader) app.Solution {
 	p, err := Parse(r)
 	if err != nil {
-		return "", err
+		return app.NewError(err)
 	}
 	m := Machine{
 		Opset: Opset,
 		R:     make(Registers),
 	}
 	m.Exec(p...)
-	return strconv.Itoa(m.R.Max()), nil
+	return app.Int(m.R.Max())
 }
 
-func SolveMaxAny(r io.Reader) (string, error) {
+func SolveMaxAny(r io.Reader) app.Solution {
 	p, err := Parse(r)
 	if err != nil {
-		return "", err
+		return app.NewError(err)
 	}
 	m := Machine{
 		Opset: Opset,
@@ -38,5 +38,5 @@ func SolveMaxAny(r io.Reader) (string, error) {
 		}
 	}
 	m.Exec(p...)
-	return strconv.Itoa(v), nil
+	return app.Int(v)
 }

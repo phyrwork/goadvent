@@ -9,6 +9,7 @@ import (
 	"container/ring"
 	"encoding/hex"
 	"fmt"
+	"github.com/phyrwork/goadvent/app"
 	"github.com/phyrwork/goadvent/iterator"
 	"golang.org/x/sync/errgroup"
 	"io"
@@ -116,7 +117,7 @@ func DenseHash(in []byte) ([]byte, error) {
 
 // TODO: there's a bug somewhere (my input doesn't give the right answer)
 //  but it passes for all the given examples! :(
-func KnotHash(rd io.Reader) (string, error) {
+func KnotHash(rd io.Reader) app.Solution {
 	str := make(chan byte)
 	g := errgroup.Group{}
 	g.Go(func() error {
@@ -124,13 +125,13 @@ func KnotHash(rd io.Reader) (string, error) {
 	})
 	s := SparseHash(256, str)
 	if err := g.Wait(); err != nil {
-		return "", err
+		return app.NewError(err)
 	}
 	d, err := DenseHash(s)
 	if err != nil {
-		return "", err
+		return app.NewError(err)
 	}
-	return hex.EncodeToString(d), nil
+	return app.String(hex.EncodeToString(d))
 }
 
 type StreamFunc func (str chan <-byte) error
@@ -210,11 +211,10 @@ func solveSparse(n int, strf StreamFunc) (int, error) {
 	return int(a) * int(b), nil
 }
 
-func SolveSparse(rd io.Reader) (string, error) {
+func SolveSparse(rd io.Reader) app.Solution {
 	h, err := solveSparse(256, NewCommaStream(rd))
 	if err != nil {
-		return "", err
+		return app.NewError(err)
 	}
-	s := strconv.Itoa(h)
-	return s, nil
+	return app.Int(h)
 }

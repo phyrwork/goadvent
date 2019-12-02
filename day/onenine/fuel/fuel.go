@@ -56,12 +56,12 @@ func RocketFuel(w int) int {
 }
 
 func NewSolver(f FuelFunc) app.SolverFunc {
-	return func (r io.Reader) (string, error) {
+	return func (r io.Reader) app.Solution {
 		m, err := Read(r)
 		if err != nil {
-			return "", fmt.Errorf("parse error")
+			return app.Errorf("parse error")
 		}
 		f := Fuel(m, f)
-		return strconv.Itoa(f), nil
+		return app.Int(f)
 	}
 }

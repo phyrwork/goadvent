@@ -3,6 +3,7 @@ package chess
 import (
 	"crypto/md5"
 	"fmt"
+	"github.com/phyrwork/goadvent/app"
 	"io"
 	"io/ioutil"
 	"strconv"
@@ -153,30 +154,30 @@ func (g *FillerGenerator) Next() bool {
 
 func (g *FillerGenerator) String() string { return g.out }
 
-func SolveAppend(r io.Reader) (string, error) {
+func SolveAppend(r io.Reader) app.Solution {
 	in, err := ioutil.ReadAll(r)
 	if err != nil {
-		return "", fmt.Errorf("reader error: %v", err)
+		return app.Errorf("reader error: %v", err)
 	}
 	key := strings.TrimSpace(string(in))
 	sub := NewHashGenerator(HashMd5, key, 0)
 	gen := NewPasswordGenerator(8, sub, 5)
 	if !gen.Next() {
-		return "", fmt.Errorf("password not generated")
+		return app.Errorf("password not generated")
 	}
-	return gen.String(), nil
+	return app.String(gen.String())
 }
 
-func SolveFiller(r io.Reader) (string, error) {
+func SolveFiller(r io.Reader) app.Solution {
 	in, err := ioutil.ReadAll(r)
 	if err != nil {
-		return "", fmt.Errorf("reader error: %v", err)
+		return app.Errorf("reader error: %v", err)
 	}
 	key := strings.TrimSpace(string(in))
 	sub := NewHashGenerator(HashMd5, key, 0)
 	gen := NewFillerGenerator(8, sub, 5)
 	if !gen.Next() {
-		return "", fmt.Errorf("password not generated")
+		return app.Errorf("password not generated")
 	}
-	return gen.String(), nil
+	return app.String(gen.String())
 }

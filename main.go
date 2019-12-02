@@ -88,9 +88,9 @@ func main() {
 	if solver == nil {
 		log.Fatalf("error: solver '%v' not found", id)
 	}
-	out, err := solver.Solve(os.Stdin)
-	if err != nil {
-		log.Fatalf("solver error: %v", err)
+	sol := solver.Solve(os.Stdin)
+	if sol.IsError() {
+		log.Fatalf("solution error: %v", sol)
 	}
-	fmt.Println(out)
+	fmt.Println(sol)
 }

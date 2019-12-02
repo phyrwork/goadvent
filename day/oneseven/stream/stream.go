@@ -6,7 +6,6 @@ import (
 	"github.com/alecthomas/participle/lexer/ebnf"
 	"github.com/phyrwork/goadvent/app"
 	"io"
-	"strconv"
 )
 
 type Group struct {
@@ -74,13 +73,13 @@ func (g *Group) Chars() int {
 }
 
 func NewSolver(f func (g *Group) int) app.SolverFunc {
-	return app.SolverFunc(func (r io.Reader) (string, error) {
+	return app.SolverFunc(func (r io.Reader) app.Solution {
 		g := &Group{}
 		err := parser.Parse(r, g)
 		if err != nil {
-			return "", err
+			return app.NewError(err)
 		}
 		i := f(g)
-		return strconv.Itoa(i), nil
+		return app.Int(i)
 	})
 }

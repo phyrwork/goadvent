@@ -5,7 +5,6 @@ import (
 	"github.com/phyrwork/goadvent/app"
 	"github.com/phyrwork/goadvent/iterator"
 	"io"
-	"strconv"
 	"strings"
 )
 
@@ -76,7 +75,7 @@ func UniqAnagrams(p Passphrase) (bool, error) {
 type ValidFunc func (Passphrase) (bool, error)
 
 func NewSolver(f ValidFunc) app.SolverFunc {
-	return func (r io.Reader) (string, error) {
+	return func (r io.Reader) app.Solution {
 		it := iterator.NewScannerIterator(r)
 		it.Split(bufio.ScanLines)
 		n := 0
@@ -91,8 +90,8 @@ func NewSolver(f ValidFunc) app.SolverFunc {
 			}
 			return nil
 		}); err != nil {
-			return "", err
+			return app.NewError(err)
 		}
-		return strconv.Itoa(n), nil
+		return app.Int(n)
 	}
 }

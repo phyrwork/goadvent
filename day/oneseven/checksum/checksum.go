@@ -7,7 +7,6 @@ import (
 	"github.com/phyrwork/goadvent/iterator"
 	"io"
 	"io/ioutil"
-	"strconv"
 )
 
 const (
@@ -103,18 +102,18 @@ func Checksum(it iterator.Iterator, sum SumFunc) (int, error) {
 }
 
 func NewSolver(sum SumFunc) app.Solver {
-	return app.SolverFunc(func (r io.Reader) (string, error){
+	return app.SolverFunc(func (r io.Reader) app.Solution{
 		b, err := ioutil.ReadAll(r)
 		if err != nil {
-			return "", err
+			return app.NewError(err)
 		}
 		r = bytes.NewReader(b)
 		sc := NewRowScanner(r)
 		c, err := Checksum(sc, sum)
 		if err != nil {
-			return "", err
+			return app.NewError(err)
 		}
-		return strconv.Itoa(c), nil
+		return app.Int(c)
 	})
 }
 

@@ -1,45 +1,43 @@
 package circus
 
 import (
-	"fmt"
 	"github.com/phyrwork/goadvent/app"
 	"io"
-	"strconv"
 )
 
-func NewSolver(f func (Circus) (string, error)) app.SolverFunc {
-	return func(r io.Reader) (string, error) {
+func NewSolver(f func (Circus) app.Solution) app.SolverFunc {
+	return func(r io.Reader) app.Solution {
 		descs, err := Parse(r)
 		if err != nil {
-			return "", err
+			return app.NewError(err)
 		}
 		c, err := NewCircus(descs...)
 		if err != nil {
-			return "", err
+			return app.NewError(err)
 		}
 		return f(c)
 	}
 }
 
-func SolveBase(c Circus) (string, error) {
+func SolveBase(c Circus) app.Solution {
 	bt, err := c.Base()
 	if err != nil {
-		return "", err
+		return app.NewError(err)
 	}
-	return bt.Name, nil
+	return app.String(bt.Name)
 }
 
-func SolveWeight(c Circus) (string, error) {
+func SolveWeight(c Circus) app.Solution {
 	mod, err := c.Balance()
 	if err != nil {
-		return "", err
+		return app.NewError(err)
 	}
 	if len(mod) != 1 {
-		return "", fmt.Errorf("more than one tower modified")
+		return app.Errorf("more than one tower modified")
 	}
 	var w int
 	for _, w = range mod {
 		break
 	}
-	return strconv.Itoa(w), nil
+	return app.Int(w)
 }

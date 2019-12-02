@@ -88,12 +88,12 @@ func (d *Digits) Sum(cmp CmpFunc) int {
 }
 
 func NewSolver(cmp CmpFunc) app.SolverFunc {
-	return func (rd io.Reader) (string, error) {
+	return func (rd io.Reader) app.Solution {
 		d, err := NewDigits(rd)
 		if err != nil {
-			return "", err
+			return app.NewError(err)
 		}
 		i := d.Sum(cmp)
-		return strconv.Itoa(i), nil
+		return app.Int(i)
 	}
 }

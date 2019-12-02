@@ -8,7 +8,6 @@ import (
 	"github.com/phyrwork/goadvent/app"
 	"github.com/phyrwork/goadvent/vector"
 	"io"
-	"strconv"
 )
 
 var lex = lexer.Must(ebnf.New(`
@@ -137,11 +136,11 @@ func Solve(r io.Reader, f func (c Compass, s ...Step) vector.Vector) (int, error
 }
 
 func NewSolver(f func (c Compass, s ...Step) vector.Vector) app.SolverFunc {
-	return func (r io.Reader) (string, error) {
+	return func (r io.Reader) app.Solution {
 		d, err := Solve(r, f)
 		if err != nil {
-			return "", err
+			return app.NewError(err)
 		}
-		return strconv.Itoa(d), nil
+		return app.Int(d)
 	}
 }

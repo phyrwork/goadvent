@@ -133,15 +133,15 @@ var DiamondKeypad = Keypad{
 }
 
 func NewSolver(kp Keypad, sp Position) app.SolverFunc {
-	return func (r io.Reader) (string, error) {
+	return func (r io.Reader) app.Solution {
 		dc := NewDecoder(DefaultGrammar, kp, sp)
 		if err := dc.Decode(r); err != nil {
-			return "", fmt.Errorf("decode error: %v", err)
+			return app.Errorf("decode error: %v", err)
 		}
 		out := make([]rune, 0)
 		for _, k := range dc.Out() {
 			out = append(out, k)
 		}
-		return string(out), nil
+		return app.String(out)
 	}
 }

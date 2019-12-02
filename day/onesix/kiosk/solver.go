@@ -1,15 +1,14 @@
 package kiosk
 
 import (
-	"fmt"
+	"github.com/phyrwork/goadvent/app"
 	"io"
-	"strconv"
 )
 
-func SolveSumReal(r io.Reader) (string, error) {
+func SolveSumReal(r io.Reader) app.Solution {
 	all, err := Read(r)
 	if err != nil {
-		return "", fmt.Errorf("input error: %v", err)
+		return app.Errorf("input error: %v", err)
 	}
 	val := Validator(AlphaCountHash)
 	ok, err := Filter(all, func (r Room) (bool, error) { return val.Valid(r) })
@@ -17,13 +16,13 @@ func SolveSumReal(r io.Reader) (string, error) {
 	for _, r := range ok {
 		sum += r.Sector
 	}
-	return strconv.Itoa(sum), nil
+	return app.Int(sum)
 }
 
-func SolveNorthPoleRoom(r io.Reader) (string, error) {
+func SolveNorthPoleRoom(r io.Reader) app.Solution {
 	all, err := Read(r)
 	if err != nil {
-		return "", fmt.Errorf("input error: %v", err)
+		return app.Errorf("input error: %v", err)
 	}
 	val := Validator(AlphaCountHash)
 	ok, err := Filter(all, func (r Room) (bool, error) { return val.Valid(r) })
@@ -31,9 +30,9 @@ func SolveNorthPoleRoom(r io.Reader) (string, error) {
 		d := Decrypt(r)
 		// yep, this was found by inspection
 		if d.Name == "northpole object storage" {
-			return strconv.Itoa(d.Sector), nil
+			return app.Int(d.Sector)
 		}
 	}
-	return "", fmt.Errorf("storage room not found")
+	return app.Errorf("storage room not found")
 }
 

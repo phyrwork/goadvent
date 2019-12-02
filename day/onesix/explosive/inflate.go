@@ -148,12 +148,12 @@ func Inflate(r io.Reader, w io.Writer, rec bool) (int, error)  {
 }
 
 func NewSolver(rec bool) app.SolverFunc {
-	return func (r io.Reader) (string, error) {
+	return func (r io.Reader) app.Solution {
 		l, err := Inflate(r, nil, rec)
 		if err != nil {
-			return "", fmt.Errorf("inflate error: %v", err)
+			return app.Errorf("inflate error: %v", err)
 		}
-		return strconv.Itoa(l), nil
+		return app.Int(l)
 	}
 }
 

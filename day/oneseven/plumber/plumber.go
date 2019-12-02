@@ -4,12 +4,12 @@ import (
 	"github.com/alecthomas/participle"
 	"github.com/alecthomas/participle/lexer"
 	"github.com/alecthomas/participle/lexer/ebnf"
+	"github.com/phyrwork/goadvent/app"
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/simple"
 	"gonum.org/v1/gonum/graph/topo"
 	"gonum.org/v1/gonum/graph/traverse"
 	"io"
-	"strconv"
 )
 
 var grammar = lexer.Must(ebnf.New(`
@@ -71,22 +71,22 @@ func GroupSize(g graph.Undirected, id int) int {
 	return n
 }
 
-func SolveSize(r io.Reader) (string, error) {
+func SolveSize(r io.Reader) app.Solution {
 	adjs, err := Parse(r)
 	if err != nil {
-		return "", err
+		return app.NewError(err)
 	}
 	g := NewGraph(adjs...)
 	n := GroupSize(g, 0)
-	return strconv.Itoa(n), nil
+	return app.Int(n)
 }
 
-func SolveCount(r io.Reader) (string, error) {
+func SolveCount(r io.Reader) app.Solution {
 	adjs, err := Parse(r)
 	if err != nil {
-		return "", err
+		return app.NewError(err)
 	}
 	g := NewGraph(adjs...)
 	n := topo.ConnectedComponents(g)
-	return strconv.Itoa(len(n)), nil
+	return app.Int(len(n))
 }

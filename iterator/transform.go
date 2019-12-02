@@ -1,6 +1,8 @@
 package iterator
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type TransformIterator struct {
 	it   Iterator

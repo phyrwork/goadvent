@@ -3,6 +3,7 @@ package intcode
 import (
 	"bufio"
 	"fmt"
+	"github.com/phyrwork/goadvent/app"
 	"github.com/phyrwork/goadvent/iterator"
 	"io"
 	"strconv"
@@ -90,26 +91,26 @@ func Pair(_p Program, n, v int) (int, error) {
 	return m.m[0], nil
 }
 
-func Solve1(r io.Reader) (string, error) {
+func Solve1(r io.Reader) app.Solution {
 	p, err := Read(r)
 	if err != nil {
-		return "", fmt.Errorf("read error: %v", err)
+		return app.Errorf("read error: %v", err)
 	}
 	o, err := Pair(p, 12,  2)
 	if err != nil {
-		return "", fmt.Errorf("pair error: %v", err)
+		return app.Errorf("pair error: %v", err)
 	}
-	return strconv.Itoa(o), nil
+	return app.Int(o)
 }
 
 type pair struct {
 	n, v int
 }
 
-func Solve2(r io.Reader) (string, error) {
+func Solve2(r io.Reader) app.Solution {
 	p, err := Read(r)
 	if err != nil {
-		return "", fmt.Errorf("read error: %v", err)
+		return app.Errorf("read error: %v", err)
 	}
 	c := make(chan pair)
 	go func () {
@@ -126,8 +127,8 @@ func Solve2(r io.Reader) (string, error) {
 			continue
 		}
 		if o == 19690720 {
-			return strconv.Itoa(100 * nv.n + nv.v), nil
+			return app.Int(100 * nv.n + nv.v)
 		}
 	}
-	return "", fmt.Errorf("solution not found")
+	return app.Errorf("solution not found")
 }
