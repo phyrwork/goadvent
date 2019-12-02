@@ -5,6 +5,7 @@ import (
 	"github.com/phyrwork/goadvent/app"
 	"github.com/phyrwork/goadvent/day/onefive/houses"
 	"github.com/phyrwork/goadvent/day/onenine/fuel"
+	"github.com/phyrwork/goadvent/day/onenine/intcode"
 	"github.com/phyrwork/goadvent/day/oneseven/captcha"
 	"github.com/phyrwork/goadvent/day/oneseven/checksum"
 	"github.com/phyrwork/goadvent/day/oneseven/circus"
@@ -73,6 +74,8 @@ var solvers = map[string]app.Solver{
 	"2017.17.2": spinlock.NewSolver(func () <-chan int { return spinlock.NewSequence(1, 50000000) }, spinlock.ZeroNext),
 	"2019.1.1": fuel.NewSolver(fuel.ModuleFuel),
 	"2019.1.2": fuel.NewSolver(fuel.RocketFuel),
+	"2019.2.1": app.SolverFunc(intcode.Solve1),
+	"2019.2.2": app.SolverFunc(intcode.Solve2),
 }
 
 func main() {
