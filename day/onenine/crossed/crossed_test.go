@@ -40,75 +40,26 @@ func TestVectorLineBuilder(t *testing.T) {
 	tests := map[int]struct {
 		in []Vector
 		from Point
-		want Line
+		want OrderedPoints
 	}{
 		// R8,U5,L5,D3
 		1: {
 			[]Vector{{8, 0}, {0, 5}, {-5, 0}, {0, -3}},
 			Point{0, 0},
-			Line{
-				Segment{Point{0, 0}, Point{8, 0}},
-				Segment{Point{8, 0}, Point{8, 5}},
-				Segment{Point{8, 5}, Point{3, 5}},
-				Segment{Point{3, 5}, Point{3, 2}},
+			OrderedPoints{
+				{0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0},
+				{8, 1}, {8, 2}, {8, 3}, {8, 4}, {8, 5},
+				{7, 5}, {6, 5}, {5, 5}, {4, 5}, {3, 5},
+				{3, 4}, {3, 3}, {3, 2},
 			},
 		},
 	}
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			b := VectorLineBuilder{test.from}
-			got := Segments(b.New(test.in...)...)
-			want := Segments(test.want...)
-			if !reflect.DeepEqual(want, got) {
-				t.Fatalf("unexpected segments: want %v, got %v", want, got)
-			}
-		})
-	}
-}
-
-func TestLine_Map(t *testing.T) {
-	tests := map[int]struct {
-		in Line
-		want Map
-	}{
-		1: {
-			Line{
-				Segment{Point{0, 0}, Point{8, 0}},
-				Segment{Point{8, 0}, Point{8, 5}},
-				Segment{Point{8, 5}, Point{3, 5}},
-				Segment{Point{3, 5}, Point{3, 2}},
-			},
-			Map{
-					{0, 0}: {},
-					{1, 0}: {},
-					{2, 0}: {},
-					{3, 0}: {},
-					{4, 0}: {},
-					{5, 0}: {},
-					{6, 0}: {},
-					{7, 0}: {},
-					{8, 0}: {},
-					{8, 1}: {},
-					{8, 2}: {},
-					{8, 3}: {},
-					{8, 4}: {},
-					{8, 5}: {},
-					{7, 5}: {},
-					{6, 5}: {},
-					{5, 5}: {},
-					{4, 5}: {},
-					{3, 5}: {},
-					{3, 4}: {},
-					{3, 3}: {},
-					{3, 2}: {},
-			},
-		},
-	}
-	for i, test := range tests {
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			got := test.in.Map()
+			got := b.New(test.in...).OrderedPoints()
 			if !reflect.DeepEqual(test.want, got) {
-				t.Fatalf("unexpected map: want %v, got %v", test.want, got)
+				t.Fatalf("unexpected Segments: want %v, got %v", test.want, got)
 			}
 		})
 	}
@@ -116,21 +67,21 @@ func TestLine_Map(t *testing.T) {
 
 func TestMap_Intersect(t *testing.T) {
 	tests := map[int]struct {
-		a, b Map
-		want Map
+		a, b Points
+		want Points
 	}{
 		1: {
-			Map{
+			Points{
 				{0, 1}: {},
 				{0, 2}: {},
 				{0, 3}: {},
 			},
-			Map {
+			Points{
 				{-1, 2}: {},
 				{0, 2}: {},
 				{1, 2}: {},
 			},
-			Map {
+			Points{
 				{0, 2}: {},
 			},
 		},
@@ -147,26 +98,15 @@ func TestMap_Intersect(t *testing.T) {
 
 func TestIntersectLines(t *testing.T) {
 	tests := map[int]struct {
-		in []Line
-		want Map
+		in   []Line
+		want Points
 	}{
 		1: {
 			[]Line{
-				{
-					Segment{Point{0, 0}, Point{8, 0}},
-					Segment{Point{8, 0}, Point{8, 5}},
-					Segment{Point{8, 5}, Point{3, 5}},
-					Segment{Point{3, 5}, Point{3, 2}},
-				},
-				// U7,R6,D4,L4
-				{
-					Segment{Point{0, 0}, Point{0, 7}},
-					Segment{Point{0, 7}, Point{6, 7}},
-					Segment{Point{6, 7}, Point{6, 3}},
-					Segment{Point{6, 3}, Point{2, 3}},
-				},
+				VectorLineBuilder{Point{0, 0}}.New([]Vector{{8, 0}, {0, 5}, {-5, 0}, {0, -3}}...),
+				VectorLineBuilder{Point{0, 0}}.New([]Vector{{0, 7}, {6, 0}, {0, -4}, {-4, 0}}...),
 			},
-			Map{
+			Points{
 				{0, 0}: {},
 				{3, 3}: {},
 				{6, 5}: {},

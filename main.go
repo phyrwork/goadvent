@@ -77,7 +77,8 @@ var solvers = map[string]app.Solver{
 	"2019.1.2": fuel.NewSolver(fuel.RocketFuel),
 	"2019.2.1": app.SolverFunc(intcode.Solve1),
 	"2019.2.2": app.SolverFunc(intcode.Solve2),
-	"2019.3.1": app.SolverFunc(crossed.Solve),
+	"2019.3.1": app.SolverFunc(crossed.Solve1),
+	"2019.3.2": app.SolverFunc(crossed.Solve2),
 }
 
 func main() {

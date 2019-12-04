@@ -1,14 +1,8 @@
 package crossed
 
 import (
-	"bufio"
-	"fmt"
-	"github.com/phyrwork/goadvent/app"
 	"github.com/phyrwork/goadvent/vector"
-	"io"
-	"regexp"
-	"strconv"
-	"strings"
+	"log"
 )
 
 const (
@@ -26,20 +20,30 @@ func NewPoint(d ...int) Point { return d }
 
 type Segment struct { S, E Point }
 
-func (s Segment) Segment() Segment { return s }
-
-func (s Segment) Points() []Point {
+func (s Segment) Points() Points {
 	r := vector.NewRange(Vector(s.S), Vector(s.E))
-	l := make([]Point, 0)
+	m := make(Points)
 	if err := r.Each(func (v Vector) error {
-		p := Point(v)
-		l = append(l, p)
+		p := NewPoint2(v[:]...)
+		m[p] = struct{}{}
 		return nil
 	}); err != nil {
 		// nil error func given
 		panic("each point error")
 	}
-	return l
+	return m
+}
+
+type OrderedSegment []Segment
+
+func (o OrderedSegment) Points() Points {
+	m := make(Points)
+	for _, s := range o {
+		for p := range s.Points() {
+			m[p] = struct{}{}
+		}
+	}
+	return m
 }
 
 type PointVector struct {
@@ -51,8 +55,57 @@ func (p PointVector) To() Point {
 	return Point(vector.Sum(p.V, Vector(p.P)))
 }
 
-func (p PointVector) Segment() Segment {
-	return Segment {p.P, p.To()}
+func (p PointVector) OrderedPoints() OrderedPoints {
+	// count non-zero dims, because we can only deal with one
+	var dim int
+	nzd := 0
+	for i := range p.V {
+		if p.V[i] != 0 {
+			dim = i
+			nzd++
+		}
+	}
+	switch nzd {
+	case 0:
+		// nil vector means it's just a point
+		return OrderedPoints{NewPoint2(p.P[:]...)}
+	case 1:
+		break
+	default:
+		log.Panicf("point vector not rectilinear: %v", p)
+	}
+	// generate points
+	rem := p.V[dim]
+	var sgn int
+	if rem < 0 {
+		rem = -rem
+		sgn = -1
+	} else {
+		sgn = 1
+	}
+	step := make(Vector, len(p.V))
+	step[dim] = sgn
+	cur := NewPoint(p.P[:]...)
+	out := make(OrderedPoints, 0, 1 + rem)
+	out = append(out, NewPoint2(cur[:]...))
+	for rem != 0 {
+		cur = Point(vector.Sum(Vector(cur), step))
+		out = append(out, NewPoint2(cur[:]...))
+		if rem > 0 {
+			rem--
+		} else {
+			rem++
+		}
+	}
+	return out
+}
+
+func (p PointVector) Points() Points {
+	m := make(Points)
+	for _, p := range p.OrderedPoints() {
+		m[p] = struct{}{}
+	}
+	return m
 }
 
 type Point2 [2]int
@@ -71,19 +124,23 @@ func NewPoint2(d ...int) Point2 {
 
 func (p Point2) Point() Point { return NewPoint(p[:]...) }
 
-type Map map[Point2]struct{}
+type Points map[Point2]struct{}
 
-func (m Map) Add(l ...Point) {
-	for _, p := range l {
-		m[NewPoint2(p...)] = struct{}{}
+func (m Points) Points() Points { return m }
+
+func (m Points) Slice() []Point2 {
+	o := make([]Point2, 0, len(m))
+	for p := range m {
+		o = append(o, p)
 	}
+	return o
 }
 
-func (m Map) Intersect(n Map) Map {
+func (m Points) Intersect(n Points) Points {
 	if m == nil {
 		return nil
 	}
-	o := make(Map)
+	o := make(Points)
 	for p := range m {
 		if _, ok := n[p]; ok {
 			o[p] = struct{}{}
@@ -92,8 +149,8 @@ func (m Map) Intersect(n Map) Map {
 	return o
 }
 
-func (m Map) Filter(f func (Point2) bool) Map {
-	o := make(Map)
+func (m Points) Filter(f func (Point2) bool) Points {
+	o := make(Points)
 	for p := range m {
 		if f(p) {
 			o[p] = struct{}{}
@@ -102,84 +159,62 @@ func (m Map) Filter(f func (Point2) bool) Map {
 	return o
 }
 
-var vectorRegex = regexp.MustCompile(`(U|D|L|R)(\d+)`)
+type OrderedPoints []Point2
 
-func ReadVector(s string) (Vector, error) {
-	m := vectorRegex.FindStringSubmatch(s)
-	if len(m) < 3 {
-		return Vector{}, fmt.Errorf("not a point vector string: %v", s)
-	}
-	d, err := strconv.Atoi(m[2])
-	if err != nil {
-		return Vector{}, fmt.Errorf("atoi error: %v", err)
-	}
-	var v Vector
-	switch m[1] {
-	case "U":
-		v = Vector{0, 1}
-	case "D":
-		v = Vector{0, -1}
-	case "L":
-		v = Vector{-1, 0}
-	case "R":
-		v = Vector{1, 0}
-	default:
-		return Vector{}, fmt.Errorf("unknown direction: %v", m[1])
-	}
-	return vector.Mult(v, d), nil
-}
+func (o OrderedPoints) OrderedPoints() OrderedPoints { return o }
 
-func Read(r io.Reader) ([][]Vector, error) {
-	o := make([][]Vector, 0)
-	sc := bufio.NewScanner(r)
-	sc.Split(bufio.ScanLines)
-	for sc.Scan() {
-		s := sc.Text()
-		w := strings.Split(s, ",")
-		l := make([]Vector, len(w))
-		for i, w := range w {
-			v, err := ReadVector(w)
-			if err != nil {
-				return nil, fmt.Errorf("vector read error: %v", err)
-			}
-			l[i] = v
-		}
-		o = append(o, l)
-	}
-	if err := sc.Err(); err != nil {
-		return nil, fmt.Errorf("scan error: %v", err)
-	}
-	return o, nil
-}
-
-type Segmenter interface {
-	Segment() Segment
-}
-
-func Segments(s ...Segmenter) []Segment {
-	o := make([]Segment, len(s))
-	for i, s := range s {
-		o[i] = s.Segment()
-	}
-	return o
-}
-
-type Line []Segmenter
-
-func (l Line) Map() Map {
-	m := make(Map)
-	for _, s := range l {
-		m.Add(s.Segment().Points()...)
+func (o OrderedPoints) Points() Points {
+	m := make(Points)
+	for _, p := range o {
+		m[p] = struct{}{}
 	}
 	return m
+}
+
+type Line interface {
+	Points() Points
+}
+
+type DirectedLine interface {
+	Line
+	OrderedPoints() OrderedPoints
+}
+
+type OrderedPointVectors []PointVector
+
+func (o OrderedPointVectors) Points() Points {
+	m := make(Points, len(o))
+	for _, v := range o {
+		for _, p := range v.OrderedPoints() {
+			m[p] = struct{}{}
+		}
+	}
+	return m
+}
+
+func (o OrderedPointVectors) OrderedPoints() OrderedPoints {
+	s := make(OrderedPoints, 0)
+	if len(o) == 0 {
+		return nil
+	}
+	for _, p := range o[0].OrderedPoints() {
+		s = append(s, p)
+	}
+	for i := 1; i < len(o); i++ {
+		o := o[i].OrderedPoints()
+		for i := 1; i < len(o); i++ {
+			s = append(s, o[i])
+		}
+	}
+	return s
 }
 
 type VectorLineBuilder struct {
 	From Point
 }
 
-func (b VectorLineBuilder) New(v ...Vector) Line {
-	l := make(Line, len(v))
+func (b VectorLineBuilder) New(v ...Vector) OrderedPointVectors {
+	l := make(OrderedPointVectors, len(v))
 	cur := b.From
 	for i, v := range v {
 		s := PointVector{cur, v}
@@ -189,55 +224,15 @@ func (b VectorLineBuilder) New(v ...Vector) Line {
 	return l
 }
 
-func IntersectLines(l ...Line) Map {
-	var m Map
+func IntersectLines(l ...Line) Points {
+	var m Points
 	if len(l) >= 1 {
 		l := l[0]
-		m = l.Map()
+		m = l.Points()
 	}
 	for i := 1; i < len(l); i++ {
 		l := l[i]
-		m = m.Intersect(l.Map())
+		m = m.Intersect(l.Points())
 	}
 	return m
-}
-
-func Solve(r io.Reader) app.Solution {
-	// line vectors
-	v, err := Read(r)
-	if err != nil {
-		return app.Errorf("input read error: %v", err)
-	}
-	// make lines
-	o := Point{0, 0}
-	c := make([]Line, len(v))
-	for i := range v {
-		b := VectorLineBuilder{o}
-		l := b.New(v[i]...)
-		c[i] = l
-	}
-	// intersect lines
-	m := IntersectLines(c...).Filter(func (p Point2) bool {
-		return !vector.Eq(Vector(NewPoint(p[:]...)), Vector(o))
-	})
-	var p Point
-	var dp int
-	for q := range m {
-		q := NewPoint(q[:]...)
-		// best by default
-		if p == nil {
-			p = q
-			dp = vector.Manhattan(Vector(o), Vector(p))
-			continue
-		}
-		// best by distance
-		if dq := vector.Manhattan(Vector(o), Vector(q)); dq < dp {
-			p = q
-			dp = dq
-		}
-	}
-	if p == nil {
-		return app.Errorf("lines do not intersect")
-	}
-	return app.Int(dp)
 }
