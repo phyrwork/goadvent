@@ -5,6 +5,7 @@ import (
 	"github.com/phyrwork/goadvent/app"
 	"github.com/phyrwork/goadvent/day/onefive/houses"
 	"github.com/phyrwork/goadvent/day/onenine/crossed"
+	"github.com/phyrwork/goadvent/day/onenine/depot"
 	"github.com/phyrwork/goadvent/day/onenine/fuel"
 	"github.com/phyrwork/goadvent/day/onenine/intcode"
 	"github.com/phyrwork/goadvent/day/oneseven/captcha"
@@ -79,6 +80,8 @@ var solvers = map[string]app.Solver{
 	"2019.2.2": app.SolverFunc(intcode.Solve2),
 	"2019.3.1": app.SolverFunc(crossed.Solve1),
 	"2019.3.2": app.SolverFunc(crossed.Solve2),
+	"2019.4.1": depot.NewSolver(depot.Rules1...),
+	"2019.4.2": depot.NewSolver(depot.Rules2...),
 }
 
 func main() {
