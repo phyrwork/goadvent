@@ -20,24 +20,24 @@ func TestPasswordGenerator(t *testing.T) {
 
 func TestSolveAppend(t *testing.T) {
 	in := "reyedfim\n"
-	got, err := SolveAppend(strings.NewReader(in))
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	ans := SolveAppend(strings.NewReader(in))
+	if ans.IsError() {
+		t.Fatalf("unexpected error: %v", ans)
 	}
 	want := "f97c354d"
-	if want != got {
+	if got := ans.String(); want != got {
 		t.Fatalf("unexpected password: wnat %v, got %v", want, got)
 	}
 }
 
 func TestSolveFiller(t *testing.T) {
 	in := "abc\n"
-	got, err := SolveFiller(strings.NewReader(in))
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	ans := SolveFiller(strings.NewReader(in))
+	if ans.IsError() {
+		t.Fatalf("unexpected error: %v", ans)
 	}
 	want := "05ace8e3"
-	if want != got {
+	if got := ans.String(); want != got {
 		t.Fatalf("unexpected password: wnat %v, got %v", want, got)
 	}
 }

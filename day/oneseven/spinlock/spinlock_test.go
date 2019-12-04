@@ -64,11 +64,11 @@ func TestSolvers(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			r := strings.NewReader(test.in)
 			s := NewSolver(test.c, test.v)
-			got, err := s(r)
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+			ans := s(r)
+			if ans.IsError() {
+				t.Fatalf("unexpected error: %v", ans)
 			}
-			if got != test.want {
+			if got := ans.String(); got != test.want {
 				t.Fatalf("unexpected result: want %v, got %v", test.want, got)
 			}
 		})

@@ -54,23 +54,23 @@ var example =
 6 <-> 4, 5`
 
 func TestSolveSize(t *testing.T) {
-	got, err := SolveSize(strings.NewReader(example))
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	ans := SolveSize(strings.NewReader(example))
+	if ans.IsError() {
+		t.Fatalf("unexpected error: %v", ans)
 	}
 	want := "6"
-	if want != got {
+	if got := ans.String(); want != got {
 		t.Fatalf("unexpected size: want %v, got %v", want, got)
 	}
 }
 
 func TestSolveCount(t *testing.T) {
-	got, err := SolveCount(strings.NewReader(example))
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	ans := SolveCount(strings.NewReader(example))
+	if ans.IsError() {
+		t.Fatalf("unexpected error: %v", ans)
 	}
 	want := "2"
-	if want != got {
+	if got := ans.String(); want != got {
 		t.Fatalf("unexpected size: want %v, got %v", want, got)
 	}
 }

@@ -122,11 +122,11 @@ func TestKnotHash(t *testing.T) {
 	}
 	for key, want := range tests {
 		t.Run(key, func(t *testing.T) {
-			got, err := KnotHash(strings.NewReader(key))
-			if err != nil {
-				t.Errorf("unexpected error: %v", err)
+			ans := KnotHash(strings.NewReader(key))
+			if ans.IsError() {
+				t.Errorf("unexpected error: %v", ans)
 			}
-			if got != want {
+			if got := ans.String(); got != want {
 				t.Errorf("unexpected value: want %v, got %v", want, got)
 			}
 		})

@@ -33,11 +33,11 @@ func TestDecoders(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			r := NewSlice(test.in...)
-			got, err := test.decode(r)
-			if err != nil {
-				t.Errorf("unexpected error: %v", err)
+			ans := test.decode(r)
+			if ans.IsError() {
+				t.Errorf("unexpected error: %v", ans)
 			}
-			if got != test.want {
+			if got := ans.String(); got != test.want {
 				t.Errorf("unexpected value: want %v, got %v", test.want, got)
 			}
 		})

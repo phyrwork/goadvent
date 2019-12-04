@@ -176,11 +176,11 @@ func TestSolver(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			in := strings.NewReader(addressOrder(test.list).String())
 			solver := NewSolver(test.filt)
-			got, err := solver.Solve(in)
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+			ans := solver.Solve(in)
+			if ans.IsError() {
+				t.Fatalf("unexpected error: %v", ans)
 			}
-			if got != test.want {
+			if got := ans.String(); got != test.want {
 				t.Fatalf("unexpected answer: want %v, got %v", test.want, got)
 			}
 		})

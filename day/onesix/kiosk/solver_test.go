@@ -13,11 +13,11 @@ func TestSolveSumReal(t *testing.T) {
 		"totally-real-room-200[decoy]",
 	}, "\n")
 	want := "1514"
-	got, err := SolveSumReal(strings.NewReader(in))
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	ans := SolveSumReal(strings.NewReader(in))
+	if ans.IsError() {
+		t.Fatalf("unexpected error: %v", ans)
 	}
-	if got != want {
+	if got := ans.String(); got != want {
 		t.Fatalf("unexpected answer: want %v, got %v", want, got)
 	}
 }
