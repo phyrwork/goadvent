@@ -86,39 +86,92 @@ func (m *Machine) Next() bool {
 
 func (m *Machine) Err() error { return m.err }
 
+func Add(m *Machine, pc int) (int, bool) {
+	a, b, o := m.getArg(pc, 0), m.getArg(pc, 1), m.m[pc+3]
+	m.m[o] = a + b
+	return pc + 4, true
+}
+
+func Mul(m *Machine, pc int) (int, bool) {
+	a, b, o := m.getArg(pc, 0), m.getArg(pc, 1), m.m[pc+3]
+	m.m[o] = a * b
+	return pc + 4, true
+}
+
+func In(m *Machine, pc int) (int, bool) {
+	if m.in == nil {
+		panic("nil input handler")
+	}
+	o := m.m[pc+1]
+	m.m[o] = m.in()
+	return pc + 2, true
+}
+
+func Out(m *Machine, pc int) (int, bool) {
+	if m.out == nil {
+		panic("nil output handler")
+	}
+	i := m.getArg(pc, 0)
+	m.out(i)
+	return pc + 2, true
+}
+
+func Jumpnz(m *Machine, pc int) (int, bool) {
+	cmp := m.getArg(pc, 0)
+	if cmp == 0 {
+		return pc + 3, true
+	}
+	pc = m.getArg(pc, 1)
+	return pc, true
+}
+
+func Jumpz(m *Machine, pc int) (int, bool) {
+	cmp := m.getArg(pc, 0)
+	if cmp != 0 {
+		return pc + 3, true
+	}
+	pc = m.getArg(pc, 1)
+	return pc, true
+}
+
+func Less(m *Machine, pc int) (int, bool) {
+	a, b := m.getArg(pc, 0), m.getArg(pc, 1)
+	var r int
+	if a < b {
+		r = 1
+	} else {
+		r = 0
+	}
+	o := m.m[pc+3]
+	m.m[o] = r
+	return pc + 4, true
+}
+
+func Eq(m *Machine, pc int) (int, bool) {
+	a, b := m.getArg(pc, 0), m.getArg(pc, 1)
+	var r int
+	if a == b {
+		r = 1
+	} else {
+		r = 0
+	}
+	o := m.m[pc+3]
+	m.m[o] = r
+	return pc + 4, true
+}
+
+func Halt(m *Machine, pc int) (int, bool) {
+	return pc + 1, false
+}
+
 var DefaultOps = map[int]Op {
-	// add
-	1: func (m *Machine, pc int) (int, bool) {
-		a, b, o := m.getArg(pc, 0), m.getArg(pc, 1), m.m[pc+3]
-		m.m[o] = a + b
-		return pc + 4, true
-	},
-	// mul
-	2: func (m *Machine, pc int) (int, bool) {
-		a, b, o := m.getArg(pc, 0), m.getArg(pc, 1), m.m[pc+3]
-		m.m[o] = a * b
-		return pc + 4, true
-	},
-	// read
-	3: func (m *Machine, pc int) (int, bool) {
-		if m.in == nil {
-			panic("nil input handler")
-		}
-		o := m.m[pc+1]
-		m.m[o] = m.in()
-		return pc + 2, true
-	},
-	// write
-	4: func (m *Machine, pc int) (int, bool) {
-		if m.out == nil {
-			panic("nil output handler")
-		}
-		i := m.getArg(pc, 0)
-		m.out(i)
-		return pc + 2, true
-	},
-	// halt
-	99: func (m *Machine, pc int) (int, bool) {
-		return pc + 1, false
-	},
+	1: Add,
+	2: Mul,
+	3: In,
+	4: Out,
+	5: Jumpnz,
+	6: Jumpz,
+	7: Less,
+	8: Eq,
+	99: Halt,
 }

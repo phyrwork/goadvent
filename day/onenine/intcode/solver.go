@@ -110,3 +110,27 @@ func Solve3(r io.Reader) app.Solution {
 	}
 	return app.Int(out[len(out)-1])
 }
+
+func Solve4(r io.Reader) app.Solution {
+	out := make([]int, 0)
+	p, err := Read(r)
+	if err != nil {
+		return app.Errorf("read error: %v", err)
+	}
+	m := Machine{
+		m: Memory(p),
+		op: DefaultOps,
+		in: func () int { return 5 },
+		out: func (i int) {
+			out = append(out, i)
+		},
+	}
+	for m.Next() {}
+	if err := m.Err(); err != nil {
+		return app.Errorf("run error: %v", err)
+	}
+	if len(out) == 0 {
+		return app.Errorf("program produced no output")
+	}
+	return app.Int(out[0])
+}

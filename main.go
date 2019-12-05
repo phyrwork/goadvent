@@ -83,6 +83,7 @@ var solvers = map[string]app.Solver{
 	"2019.4.1": depot.NewSolver(depot.Rules1...),
 	"2019.4.2": depot.NewSolver(depot.Rules2...),
 	"2019.5.1": app.SolverFunc(intcode.Solve3),
+	"2019.5.2": app.SolverFunc(intcode.Solve4),
 }
 
 func main() {
