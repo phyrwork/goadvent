@@ -1,11 +1,7 @@
 package intcode
 
 import (
-	"bufio"
 	"fmt"
-	"github.com/phyrwork/goadvent/app"
-	"github.com/phyrwork/goadvent/iterator"
-	"io"
 	"strconv"
 )
 
@@ -13,13 +9,62 @@ type Program []int
 
 type Memory Program
 
-type Op func (m Memory, pci int) (pco int, ok bool)
+// TODO: don't need to pass PC anymore
+type Op func (m *Machine, pci int) (pco int, ok bool)
+
+const (
+	Position = '0'
+	Immediate = '1'
+)
+
+type ArgModes []rune
+
+func NewArgModes(ov int) ArgModes {
+	if ov < 0 {
+		panic("negative op val")
+	}
+	s := strconv.Itoa(ov)
+	c := []rune(s)
+	if len(c) < 3 {
+		return nil
+	}
+	c = c[:len(c) - 2] // keep only arg chars
+	return c
+}
+
+func (am ArgModes) Mode(arg int) rune {
+	if arg >= len(am) {
+		return Position
+	}
+	// codes are ascending right to left
+	return am[len(am) - (1 + arg)]
+}
 
 type Machine struct {
 	m   Memory
 	pc  int
 	op  map[int]Op
+	am  ArgModes
 	err error
+	in  func () int
+	out func (int)
+}
+
+func parseOp(ov int) int {
+	return ov % 100
+}
+
+func (m *Machine) getArg(pc int, o int) int {
+	am := m.am.Mode(o)
+	switch am {
+	case Immediate:
+		return m.m[pc+1+o]
+	case Position:
+		a := m.m[pc+1+o]
+		return m.m[a]
+	default:
+		panic(fmt.Sprintf("unknown arg mode %v", am))
+	}
 }
 
 func (m *Machine) Next() bool {
@@ -27,108 +72,53 @@ func (m *Machine) Next() bool {
 		m.err = fmt.Errorf("pc out of bounds: %v/%v", m.pc, len(m.m))
 		return false
 	}
-	oc := m.m[m.pc]
+	ov := m.m[m.pc]
+	oc := parseOp(ov)
+	m.am = NewArgModes(ov)
 	op, ok := m.op[oc]
 	if !ok {
 		m.err = fmt.Errorf("unknown opcode: %v", oc)
 		return false
 	}
-	m.pc, ok = op(m.m, m.pc)
+	m.pc, ok = op(m, m.pc)
 	return ok
 }
 
 func (m *Machine) Err() error { return m.err }
 
 var DefaultOps = map[int]Op {
-	1: func (m Memory, pc int) (int, bool) {
-		a, b, o := m[pc+1], m[pc+2], m[pc+3]
-		m[o] = m[a] + m[b]
+	// add
+	1: func (m *Machine, pc int) (int, bool) {
+		a, b, o := m.getArg(pc, 0), m.getArg(pc, 1), m.m[pc+3]
+		m.m[o] = a + b
 		return pc + 4, true
 	},
-	2: func (m Memory, pc int) (int, bool) {
-		a, b, o := m[pc+1], m[pc+2], m[pc+3]
-		m[o] = m[a] * m[b]
+	// mul
+	2: func (m *Machine, pc int) (int, bool) {
+		a, b, o := m.getArg(pc, 0), m.getArg(pc, 1), m.m[pc+3]
+		m.m[o] = a * b
 		return pc + 4, true
 	},
-	99: func (m Memory, pc int) (int, bool) {
+	// read
+	3: func (m *Machine, pc int) (int, bool) {
+		if m.in == nil {
+			panic("nil input handler")
+		}
+		o := m.m[pc+1]
+		m.m[o] = m.in()
+		return pc + 2, true
+	},
+	// write
+	4: func (m *Machine, pc int) (int, bool) {
+		if m.out == nil {
+			panic("nil output handler")
+		}
+		i := m.getArg(pc, 0)
+		m.out(i)
+		return pc + 2, true
+	},
+	// halt
+	99: func (m *Machine, pc int) (int, bool) {
 		return pc + 1, false
 	},
-}
-
-func Read(r io.Reader) (Program, error) {
-	p := make(Program, 0)
-	sc := bufio.NewScanner(r)
-	sc.Split(iterator.SplitComma)
-	for sc.Scan() {
-		s := sc.Text()
-		i, err := strconv.Atoi(s)
-		if err != nil {
-			return nil, fmt.Errorf("atoi error: %v", err)
-		}
-		p = append(p, i)
-	}
-	if err := sc.Err(); err != nil {
-		return nil, fmt.Errorf("scan error: %v", err)
-	}
-	return p, nil
-}
-
-func Pair(_p Program, n, v int) (int, error) {
-	p := make(Program, len(_p))
-	copy(p, _p)
-	p[1] = n
-	p[2] = v
-	m := Machine{
-		m:  Memory(p),
-		op: DefaultOps,
-	}
-	for m.Next() {
-
-	}
-	if err := m.Err(); err != nil {
-		return 0, fmt.Errorf("machine error: %v", err)
-	}
-	return m.m[0], nil
-}
-
-func Solve1(r io.Reader) app.Solution {
-	p, err := Read(r)
-	if err != nil {
-		return app.Errorf("read error: %v", err)
-	}
-	o, err := Pair(p, 12,  2)
-	if err != nil {
-		return app.Errorf("pair error: %v", err)
-	}
-	return app.Int(o)
-}
-
-type pair struct {
-	n, v int
-}
-
-func Solve2(r io.Reader) app.Solution {
-	p, err := Read(r)
-	if err != nil {
-		return app.Errorf("read error: %v", err)
-	}
-	c := make(chan pair)
-	go func () {
-		for n := 0; n <= 99; n++ {
-			for v := 0; v <= 99; v++ {
-				c <-pair{n, v}
-			}
-		}
-		close(c)
-	}()
-	for nv := range c {
-		o, err := Pair(p, nv.n, nv.v)
-		if err != nil {
-			continue
-		}
-		if o == 19690720 {
-			return app.Int(100 * nv.n + nv.v)
-		}
-	}
-	return app.Errorf("solution not found")
 }
