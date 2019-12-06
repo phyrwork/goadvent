@@ -8,6 +8,7 @@ import (
 	"github.com/phyrwork/goadvent/day/onenine/depot"
 	"github.com/phyrwork/goadvent/day/onenine/fuel"
 	"github.com/phyrwork/goadvent/day/onenine/intcode"
+	"github.com/phyrwork/goadvent/day/onenine/orbit"
 	"github.com/phyrwork/goadvent/day/oneseven/captcha"
 	"github.com/phyrwork/goadvent/day/oneseven/checksum"
 	"github.com/phyrwork/goadvent/day/oneseven/circus"
@@ -84,6 +85,7 @@ var solvers = map[string]app.Solver{
 	"2019.4.2": depot.NewSolver(depot.Rules2...),
 	"2019.5.1": app.SolverFunc(intcode.Solve3),
 	"2019.5.2": app.SolverFunc(intcode.Solve4),
+	"2019.6.1": app.SolverFunc(orbit.Solve1),
 }
 
 func main() {
