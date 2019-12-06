@@ -86,6 +86,7 @@ var solvers = map[string]app.Solver{
 	"2019.5.1": app.SolverFunc(intcode.Solve3),
 	"2019.5.2": app.SolverFunc(intcode.Solve4),
 	"2019.6.1": app.SolverFunc(orbit.Solve1),
+	"2019.6.2": app.SolverFunc(orbit.Solve2),
 }
 
 func main() {

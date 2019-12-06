@@ -57,11 +57,38 @@ func TestCountOrbits(t *testing.T) {
 		{"K", "J"},
 		{"L", "K"},
 	}
-	g := NewGraph(o...)
+	g := NewDirected(o...)
 	got := CountOrbits(g)
 	want := 42
 	if got != want {
 		t.Fatalf("unexpected count: want %v, got %v", want, got)
+	}
+}
+
+func TestAdjDistanceTo(t *testing.T) {
+	o := []Orbit{
+		{"B", "COM"},
+		{"C", "B"},
+		{"D", "C"},
+		{"E", "D"},
+		{"F", "E"},
+		{"G", "B"},
+		{"H", "G"},
+		{"I", "D"},
+		{"J", "E"},
+		{"K", "J"},
+		{"L", "K"},
+		{"YOU", "K"},
+		{"SAN", "I"},
+	}
+	g := NewUndirected(o...)
+	got, ok := AdjDistanceTo(g, "YOU", "SAN")
+	if !ok {
+		t.Fatalf("expected path")
+	}
+	want := 4
+	if got != want {
+		t.Fatalf("unexpected dist: want %v, got %v", want, got)
 	}
 }
 

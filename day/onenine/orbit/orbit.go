@@ -2,9 +2,11 @@ package orbit
 
 import (
 	"gonum.org/v1/gonum/graph"
+	"gonum.org/v1/gonum/graph/path"
 	"gonum.org/v1/gonum/graph/simple"
 	"gonum.org/v1/gonum/graph/traverse"
 	"log"
+	"math"
 	"strconv"
 )
 
@@ -25,7 +27,7 @@ type Orbit struct {
 	Orbits Body
 }
 
-func NewGraph(orbs ...Orbit) graph.Directed {
+func NewDirected(orbs ...Orbit) graph.Directed {
 	g := simple.NewDirectedGraph()
 	for _, o := range orbs {
 		// orbited <- orbiter
@@ -36,21 +38,14 @@ func NewGraph(orbs ...Orbit) graph.Directed {
 	return g
 }
 
-//func MapDepth(f Body, g graph.Directed) map[Body]int {
-//	depth := make(map[Body]int)
-//	// visit is a hacky way of collecting node depth by using
-//	// until as a visit func
-//	visit := func (n graph.Node, d int) bool {
-//		b := n.(Body)
-//		if _, ok := depth[b]; !ok {
-//			depth[b] = d
-//		}
-//		return false
-//	}
-//	search := traverse.BreadthFirst{}
-//	search.Walk(g, f, visit)
-//	return depth
-//}
+func NewUndirected(orbs ...Orbit) graph.Undirected {
+	g := simple.NewUndirectedGraph()
+	for _, o := range orbs {
+		e := g.NewEdge(o.Body, o.Orbits)
+		g.SetEdge(e)
+	}
+	return g
+}
 
 func CountOrbits(g graph.Directed) int {
 	count := 0
@@ -69,4 +64,16 @@ func CountOrbits(g graph.Directed) int {
 		count += len(seen) - 1 // will always see self
 	}
 	return count
+}
+
+func AdjDistanceTo(g graph.Undirected, f, t Body) (int, bool) {
+	short := path.DijkstraFrom(f, g)
+	p, d := short.To(t.ID())
+	if math.IsInf(d, 0) {
+		return 0, false
+	}
+	// path includes self
+	// two less transfers to account for orbit edges between
+	// f - parent and t - parent
+	return len(p) - 3, true
 }

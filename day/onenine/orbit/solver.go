@@ -40,7 +40,20 @@ func Solve1(r io.Reader) app.Solution {
 	if err != nil {
 		return app.Errorf("read error: %v", err)
 	}
-	g := NewGraph(o...)
+	g := NewDirected(o...)
 	count := CountOrbits(g)
 	return app.Int(count)
+}
+
+func Solve2(r io.Reader) app.Solution {
+	o, err := ReadOrbits(r)
+	if err != nil {
+		return app.Errorf("read error: %v", err)
+	}
+	g := NewUndirected(o...)
+	d, ok := AdjDistanceTo(g, "YOU", "SAN")
+	if !ok {
+		return app.Errorf("no path to santa")
+	}
+	return app.Int(d)
 }
