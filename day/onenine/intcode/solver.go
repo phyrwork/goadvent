@@ -94,10 +94,10 @@ func Solve3(r io.Reader) app.Solution {
 		return app.Errorf("read error: %v", err)
 	}
 	m := Machine{
-		m: Memory(p),
-		op: DefaultOps,
-		in: func () int { return 1 },
-		out: func (i int) {
+		m:    Memory(p),
+		op:   DefaultOps,
+		Read: func () int { return 1 },
+		Write: func (i int) {
 			out = append(out, i)
 		},
 	}
@@ -118,10 +118,10 @@ func Solve4(r io.Reader) app.Solution {
 		return app.Errorf("read error: %v", err)
 	}
 	m := Machine{
-		m: Memory(p),
-		op: DefaultOps,
-		in: func () int { return 5 },
-		out: func (i int) {
+		m:    Memory(p),
+		op:   DefaultOps,
+		Read: func () int { return 5 },
+		Write: func (i int) {
 			out = append(out, i)
 		},
 	}

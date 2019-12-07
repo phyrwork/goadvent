@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/phyrwork/goadvent/app"
 	"github.com/phyrwork/goadvent/day/onefive/houses"
+	"github.com/phyrwork/goadvent/day/onenine/ampseq"
 	"github.com/phyrwork/goadvent/day/onenine/crossed"
 	"github.com/phyrwork/goadvent/day/onenine/depot"
 	"github.com/phyrwork/goadvent/day/onenine/fuel"
@@ -87,6 +88,7 @@ var solvers = map[string]app.Solver{
 	"2019.5.2": app.SolverFunc(intcode.Solve4),
 	"2019.6.1": app.SolverFunc(orbit.Solve1),
 	"2019.6.2": app.SolverFunc(orbit.Solve2),
+	"2019.7.1": app.SolverFunc(ampseq.Solve1),
 }
 
 func main() {

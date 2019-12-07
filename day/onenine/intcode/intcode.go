@@ -41,13 +41,27 @@ func (am ArgModes) Mode(arg int) rune {
 }
 
 type Machine struct {
-	m   Memory
-	pc  int
-	op  map[int]Op
-	am  ArgModes
-	err error
-	in  func () int
-	out func (int)
+	m     Memory
+	pc    int
+	op    map[int]Op
+	am    ArgModes
+	err   error
+	Read  func () int
+	Write func (int)
+}
+
+func NewMachine(is map[int]Op, p Program) *Machine {
+	mem := make(Memory, len(p))
+	copy(mem, p)
+	return &Machine{
+		m:     mem,
+		pc:    0,
+		op:    is,
+		am:    nil,
+		err:   nil,
+		Read:  nil,
+		Write: nil,
+	}
 }
 
 func parseOp(ov int) int {
@@ -69,7 +83,7 @@ func (m *Machine) getArg(pc int, o int) int {
 
 func (m *Machine) Next() bool {
 	if m.pc >= len(m.m) {
-		m.err = fmt.Errorf("pc out of bounds: %v/%v", m.pc, len(m.m))
+		m.err = fmt.Errorf("pc Write of bounds: %v/%v", m.pc, len(m.m))
 		return false
 	}
 	ov := m.m[m.pc]
@@ -99,20 +113,20 @@ func Mul(m *Machine, pc int) (int, bool) {
 }
 
 func In(m *Machine, pc int) (int, bool) {
-	if m.in == nil {
+	if m.Read == nil {
 		panic("nil input handler")
 	}
 	o := m.m[pc+1]
-	m.m[o] = m.in()
+	m.m[o] = m.Read()
 	return pc + 2, true
 }
 
 func Out(m *Machine, pc int) (int, bool) {
-	if m.out == nil {
+	if m.Write == nil {
 		panic("nil output handler")
 	}
 	i := m.getArg(pc, 0)
-	m.out(i)
+	m.Write(i)
 	return pc + 2, true
 }
 

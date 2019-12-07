@@ -20,10 +20,10 @@ func TestMachineReadWrite(t *testing.T) {
 	want := 1337
 	var got int
 	m := Machine{
-		m:  []int{3,0,4,0,99},
-		op: DefaultOps,
-		in: func () int { return want },
-		out: func (i int) { got = i },
+		m:     []int{3,0,4,0,99},
+		op:    DefaultOps,
+		Read:  func () int { return want },
+		Write: func (i int) { got = i },
 	}
 	for m.Next() {
 		// OK
@@ -115,10 +115,10 @@ func TestMachinePrograms(t *testing.T) {
 			var got int
 			out := false
 			m := Machine{
-				m:  test.p,
-				op: DefaultOps,
-				in: func () int { return test.in },
-				out: func (i int) { out = true; got = i },
+				m:     test.p,
+				op:    DefaultOps,
+				Read:  func () int { return test.in },
+				Write: func (i int) { out = true; got = i },
 			}
 			for m.Next() {
 				// OK
