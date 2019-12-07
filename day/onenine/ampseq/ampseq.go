@@ -3,6 +3,7 @@ package ampseq
 import (
 	"fmt"
 	"github.com/phyrwork/goadvent/day/onenine/intcode"
+	"golang.org/x/sync/errgroup"
 )
 
 type Amplifier struct {
@@ -23,17 +24,18 @@ func NewAmplifier(p intcode.Program, ph int) *Amplifier {
 	return a
 }
 
-func (a *Amplifier) Read(sig int) {
-	in := []int{a.ph, sig}
+func (a *Amplifier) Read(read func () int) {
+	ph := false
 	a.m.Read = func () int {
-		if len(in) == 0 {
-			return 0
+		if !ph {
+			ph = true
+			return a.ph
+		} else {
+			return read()
 		}
-		v := in[0]
-		in = in[1:]
-		return v
 	}
 }
+func (a *Amplifier) Write(write func (sig int)) { a.m.Write = write }
 
 func (a *Amplifier) Run() (int, error) {
 	for a.m.Next() {
@@ -46,7 +48,7 @@ func (a *Amplifier) Run() (int, error) {
 
 type Sequence []*Amplifier
 
-func NewSequence(p intcode.Program, in int, ph ...int) Sequence {
+func NewSequence(p intcode.Program, ph ...int) Sequence {
 	if len(ph) == 0 {
 		return nil
 	}
@@ -57,17 +59,19 @@ func NewSequence(p intcode.Program, in int, ph ...int) Sequence {
 	return a
 }
 
-func (s Sequence) Run() (int, error) {
-	sig := 0
-	for _, a := range s {
-		a.Read(sig)
-		var err error
-		sig, err = a.Run()
-		if err != nil {
-			return 0, err
-		}
+func (s Sequence) Run() error {
+	g := &errgroup.Group{}
+	for i := range s {
+		a := s[i]
+		g.Go(func () error {
+			for a.m.Next() {}
+			if err := a.m.Err(); err != nil {
+				return fmt.Errorf("run error: %v", err)
+			}
+			return nil
+		})
 	}
-	return sig, nil
+	return g.Wait()
 }
 
 // Perm calls f with each permutation of a.

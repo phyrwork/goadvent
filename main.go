@@ -88,7 +88,8 @@ var solvers = map[string]app.Solver{
 	"2019.5.2": app.SolverFunc(intcode.Solve4),
 	"2019.6.1": app.SolverFunc(orbit.Solve1),
 	"2019.6.2": app.SolverFunc(orbit.Solve2),
-	"2019.7.1": app.SolverFunc(ampseq.Solve1),
+	"2019.7.1": ampseq.NewSolver(ampseq.NewLinear, []int{0,1,2,3,4}...),
+	"2019.7.2": ampseq.NewSolver(ampseq.NewFeedback, []int{5,6,7,8,9}...),
 }
 
 func main() {
