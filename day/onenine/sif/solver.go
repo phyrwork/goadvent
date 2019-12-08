@@ -5,10 +5,11 @@ import (
 	"github.com/phyrwork/goadvent/app"
 	"github.com/phyrwork/goadvent/iterator"
 	"io"
+	"strings"
 )
 
-func Read(s io.Reader, h, w int) (Layers, error) {
-	l := make(Layers, 0)
+func Read(s io.Reader, h, w int) (Composite, error) {
+	l := make(Composite, 0)
 	ok := true
 	scr := iterator.NewRuneScanner(s)
 	scr.Skip = iterator.SkipWhitespace
@@ -69,4 +70,15 @@ func solve1(r io.Reader, h, w int) app.Solution {
 
 func Solve1(r io.Reader) app.Solution {
 	return solve1(r, 6, 25)
+}
+
+func Solve2(r io.Reader) app.Solution {
+	l, err := Read(r, 6, 25)
+	if err != nil {
+		return app.Errorf("read error: %v", err)
+	}
+	o := l.Flatten()
+	s := o.String()
+	m := strings.ReplaceAll(s, "0", " ")
+	return app.String(m)
 }

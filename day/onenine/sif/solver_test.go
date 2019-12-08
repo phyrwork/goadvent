@@ -1,6 +1,7 @@
 package sif
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -38,5 +39,34 @@ func TestSolve1(t *testing.T) {
 	want := "1"
 	if got := got.String(); got != want {
 		t.Fatalf("unexpected result: want %v, got %v", want, got)
+	}
+}
+
+func TestLayer_String(t *testing.T) {
+	l := Layer{
+		{0, 1},
+		{1, 0},
+	}
+	got := l.String()
+	want := "01\n10"
+	if got != want {
+		t.Fatalf("unexpected string: want %v, got %v", want, got)
+	}
+}
+
+func TestComposite_Flatten(t *testing.T) {
+	i := Composite{
+		{{0,2},{2,2}},
+		{{1,1},{2,2}},
+		{{2,2},{1,2}},
+		{{0,0},{0,0}},
+	}
+	got := i.Flatten()
+	want := Layer{
+		{0, 1},
+		{1, 0},
+	}
+	if !reflect.DeepEqual(want, got) {
+		t.Fatalf("unexpected layer: want %v, got %v", want, got)
 	}
 }

@@ -92,6 +92,7 @@ var solvers = map[string]app.Solver{
 	"2019.7.1": ampseq.NewSolver(ampseq.NewLinear, []int{0,1,2,3,4}...),
 	"2019.7.2": ampseq.NewSolver(ampseq.NewFeedback, []int{5,6,7,8,9}...),
 	"2019.8.1": app.SolverFunc(sif.Solve1),
+	"2019.8.2": app.SolverFunc(sif.Solve2),
 }
 
 func main() {
