@@ -27,24 +27,29 @@ func Read(r io.Reader) ([]int, error) {
 	return p, nil
 }
 
-func Solve5(r io.Reader) app.Solution {
-	out := make([]int, 0)
-	p, err := Read(r)
-	if err != nil {
-		return app.Errorf("read error: %v", err)
+func NewSolver(in []int) app.SolverFunc {
+	return func (r io.Reader) app.Solution {
+		out := make([]int, 0)
+		p, err := Read(r)
+		if err != nil {
+			return app.Errorf("read error: %v", err)
+		}
+		mem := make(MapMemory)
+		m := NewMachine(mem)
+		m.In(ReadFunc(func () int {
+			v := in[0]
+			in = in[1:]
+			return v
+		}))
+		m.Out(WriteFunc(func (i int) {
+			out = append(out, i)
+		}))
+		m.Load(p)
+		m.Run()
+		if len(out) > 2 {
+			return app.Errorf("program error: %v", out)
+		}
+		return app.Int(out[0])
 	}
-	mem := make(MapMemory)
-	m := NewMachine(mem)
-	m.In(ReadFunc(func () int {
-		return 1
-	}))
-	m.Out(WriteFunc(func (i int) {
-		out = append(out, i)
-	}))
-	m.Load(p)
-	m.Run()
-	if len(out) > 2 {
-		return app.Errorf("program error: %v", out)
-	}
-	return app.Int(out[0])
 }
+
