@@ -9,6 +9,7 @@ import (
 	"github.com/phyrwork/goadvent/day/onenine/depot"
 	"github.com/phyrwork/goadvent/day/onenine/fuel"
 	"github.com/phyrwork/goadvent/day/onenine/intcode"
+	"github.com/phyrwork/goadvent/day/onenine/intcode2"
 	"github.com/phyrwork/goadvent/day/onenine/orbit"
 	"github.com/phyrwork/goadvent/day/onenine/sif"
 	"github.com/phyrwork/goadvent/day/oneseven/captcha"
@@ -93,6 +94,7 @@ var solvers = map[string]app.Solver{
 	"2019.7.2": ampseq.NewSolver(ampseq.NewFeedback, []int{5,6,7,8,9}...),
 	"2019.8.1": app.SolverFunc(sif.Solve1),
 	"2019.8.2": app.SolverFunc(sif.Solve2),
+	"2019.9.1": app.SolverFunc(intcode2.Solve5),
 }
 
 func main() {
